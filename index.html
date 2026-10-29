@@ -1,0 +1,1398 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>SOTA SUITE Housekeeping</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: phone-first app. One list per screen, big tap targets. Desktop gets a left rail. Dark-first, champagne accent. Status colour is used only on a thin bar and the status text. */
+:root{
+  --bg:#0D0F12; --surface:#171A1F; --surface-2:#20242B; --line:#2C3038; --fg:#F3EFE7; --muted:#9B978F;
+  --accent:#E7C88F; --accent-ink:#1B1609; --accent-soft:rgba(231,200,143,.13);
+  --s-vd:#F06A5A; --s-od:#F2C14E; --s-vc:#5FA8F5; --s-ins:#4FCB8A; --s-arr:#4FD1C5; --s-oc:#8C919B; --s-ooo:#5F6570;
+  --danger:#F06A5A; --ok:#4FCB8A; --warn:#F2C14E; --on-color:#14110B;
+  --logo-f:invert(1) brightness(.96);
+  --shadow:0 20px 60px rgba(0,0,0,.5);
+  --f-display:"Unbounded","Noto Sans KR",system-ui,sans-serif;
+  --f-body:"Noto Sans KR",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#F4F1EB; --surface:#FFFFFF; --surface-2:#ECE8E0; --line:#DCD6CA; --fg:#1A1B1F; --muted:#67655F;
+  --accent:#8E6A2A; --accent-ink:#FFFFFF; --accent-soft:rgba(142,106,42,.11);
+  --s-vd:#D2412F; --s-od:#B98A0B; --s-vc:#2A74C9; --s-ins:#23935A; --s-arr:#12877D; --s-oc:#7C818B; --s-ooo:#A2A7AF;
+  --danger:#D2412F; --ok:#23935A; --warn:#B98A0B; --on-color:#FFFFFF; --logo-f:none; --shadow:0 20px 60px rgba(40,30,10,.16); color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#F4F1EB; --surface:#FFFFFF; --surface-2:#ECE8E0; --line:#DCD6CA; --fg:#1A1B1F; --muted:#67655F;
+  --accent:#8E6A2A; --accent-ink:#FFFFFF; --accent-soft:rgba(142,106,42,.11);
+  --s-vd:#D2412F; --s-od:#B98A0B; --s-vc:#2A74C9; --s-ins:#23935A; --s-arr:#12877D; --s-oc:#7C818B; --s-ooo:#A2A7AF;
+  --danger:#D2412F; --ok:#23935A; --warn:#B98A0B; --on-color:#FFFFFF; --logo-f:none; --shadow:0 20px 60px rgba(40,30,10,.16); color-scheme:light}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+h1,h2,h3{margin:0;text-wrap:balance}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+
+/* brand */
+.logo{display:block;height:46px;width:auto;align-self:flex-start;flex:none;object-fit:contain;filter:var(--logo-f)}
+.logo.lg{height:56px}
+.wm{display:inline-flex;flex-direction:column;line-height:1;color:var(--fg)}
+.wm-name{font-family:var(--f-display);font-weight:600;font-size:16px;letter-spacing:.22em;white-space:nowrap}
+.wm-sub{font-size:9px;letter-spacing:.42em;color:var(--muted);margin-top:6px;padding-top:5px;border-top:1px solid var(--line)}
+.wm.lg .wm-name{font-size:clamp(24px,4vw,38px)}
+.wm.lg .wm-sub{font-size:11px;margin-top:10px;padding-top:9px}
+
+/* controls */
+.btn{border:1px solid var(--line);background:var(--surface-2);border-radius:14px;padding:12px 16px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;min-height:46px}
+.btn:hover{border-color:var(--muted)}
+.btn svg{width:18px;height:18px;flex:none}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{border-color:var(--accent);filter:brightness(1.06)}
+.btn-ghost{background:transparent}
+.btn-sm{min-height:34px;padding:6px 12px;font-size:13px;border-radius:10px}
+.btn-block{width:100%}
+.btn-clean{background:var(--s-ins);border-color:var(--s-ins);color:var(--on-color)}
+.btn-danger{color:var(--danger)}
+.btn-danger.armed{background:var(--danger);border-color:var(--danger);color:var(--on-color)}
+.btn:disabled{opacity:.4;cursor:not-allowed;filter:none}
+.input{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;width:100%;min-height:46px}
+.input:focus{outline:none;border-color:var(--accent)}
+.input-sm{min-height:36px;padding:6px 10px;width:auto;border-radius:10px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field > label{font-size:12px;color:var(--muted)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:13px;display:inline-flex;align-items:center;gap:7px;color:var(--muted);white-space:nowrap}
+.chip[aria-pressed="true"]{color:var(--accent-ink);background:var(--accent);border-color:var(--accent)}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.langs{display:inline-flex;gap:2px;background:var(--surface-2);border-radius:12px;padding:3px}
+.langs button{border:0;background:transparent;border-radius:9px;padding:6px 10px;font-size:12px;color:var(--muted);white-space:nowrap}
+.langs button[aria-pressed="true"]{background:var(--surface);color:var(--fg)}
+.lang-sel{display:none;width:auto;min-height:42px;padding:8px 10px}
+.icon-btn{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;flex:none}
+.icon-btn svg{width:18px;height:18px}
+.tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:7px;background:var(--surface-2);white-space:nowrap}
+.tag.warn{color:var(--warn)} .tag.danger{color:var(--danger)} .tag.ok{color:var(--ok)} .tag.gold{color:var(--accent)} .tag.arr{color:var(--s-arr)}
+.st{display:inline-flex;align-items:center;gap:7px;font-weight:500;color:var(--c);white-space:nowrap}
+.st::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c);flex:none}
+.mark{font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.mark.in{color:var(--s-arr)} .mark.out{color:var(--fg)} .mark.vip{color:var(--accent)}
+.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--accent-soft);color:var(--accent);flex:none}
+.avatar.sm{width:26px;height:26px;font-size:10px}
+.faces{display:inline-flex}
+.faces .avatar{border:2px solid var(--surface)}
+.faces .avatar + .avatar{margin-left:-8px}
+
+/* login */
+.login{min-height:100%;display:grid;grid-template-columns:1.15fr 1fr}
+.login-art{position:relative;overflow:hidden;background:var(--surface);border-right:1px solid var(--line);padding:48px 44px;display:flex;flex-direction:column;justify-content:space-between;gap:28px}
+.login-art canvas{position:absolute;inset:0;width:100%;height:100%}
+.login-art > *:not(canvas){position:relative}
+.claim{font-family:var(--f-display);font-weight:400;font-size:clamp(22px,2.6vw,32px);line-height:1.25;max-width:18ch}
+.claim b{font-weight:600;color:var(--accent)}
+.login-form{display:flex;align-items:center;justify-content:center;padding-block:40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.login-card{width:100%;max-width:400px;display:flex;flex-direction:column;gap:16px}
+.divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+.roles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.role-card{display:flex;flex-direction:column;gap:8px;align-items:flex-start;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px}
+.role-card:hover{border-color:var(--accent)}
+.role-card svg{width:22px;height:22px;color:var(--accent)}
+.role-card b{font-weight:500;font-size:13px;line-height:1.25}
+.note{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:10px 12px}
+.note svg{width:16px;height:16px;flex:none;margin-top:2px;color:var(--accent)}
+
+/* shell */
+.shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100%}
+.rail{background:var(--surface);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:24px;position:sticky;top:0;height:100vh;padding-left:max(14px,env(safe-area-inset-left,0px))}
+.rail .brand{padding:0 8px}
+.rail nav{display:flex;flex-direction:column;gap:3px;overflow:auto}
+.nav-btn{display:flex;align-items:center;gap:12px;border:0;background:transparent;border-radius:12px;padding:11px 12px;color:var(--muted);text-align:left;width:100%}
+.nav-btn svg{width:20px;height:20px;flex:none}
+.nav-btn:hover{color:var(--fg);background:var(--surface-2)}
+.nav-btn[aria-current="page"]{color:var(--fg);background:var(--accent-soft)}
+.nav-btn[aria-current="page"] svg{color:var(--accent)}
+.nav-btn .count{margin-left:auto;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.me-card{display:flex;gap:10px;align-items:center;padding:10px;border-radius:14px;background:var(--surface-2)}
+.me-card div{min-width:0}
+.me-card b{display:block;font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me-card span{font-size:11px;color:var(--muted)}
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:8;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(12px);display:flex;align-items:center;gap:10px;padding-block:14px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px))}
+.topbar .brand{display:none}
+.topbar .spacer{flex:1}
+.concept{font-size:11px;color:var(--accent);border:1px dashed var(--accent);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.content{padding-block:8px 48px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+.page-head{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.page-head h1{font-family:var(--f-display);font-weight:600;font-size:clamp(24px,3vw,34px);line-height:1.1}
+.page-head .spacer{flex:1}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.panel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 18px;border-bottom:1px solid var(--line)}
+.panel-head h2{font-size:16px;font-weight:500}
+.panel-head .spacer{flex:1}
+.grid-2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px;align-items:start}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;padding:12px 18px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:12px 18px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+
+/* maid home */
+.hello h1{font-family:var(--f-display);font-weight:400;font-size:clamp(24px,3.2vw,36px);line-height:1.15}
+.hello h1 b{font-weight:600}
+.today{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px 18px}
+.today .grow{flex:1;min-width:180px}
+.ring{--p:0;width:72px;height:72px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--surface-2) 0);display:grid;place-items:center;flex:none}
+.ring span{width:58px;height:58px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-family:var(--f-mono);font-weight:700;font-size:14px}
+.list{display:flex;flex-direction:column;gap:8px}
+.rrow{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px 12px 18px;position:relative;text-align:left;width:100%}
+.rrow::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 4px 4px 0;background:var(--c)}
+.rrow .no{font-family:var(--f-display);font-weight:600;font-size:24px;line-height:1;min-width:70px}
+.rrow .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.rrow .info .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.rrow.done{opacity:.6}
+
+/* board */
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.kpi span{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.kpi span::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--k)}
+.kpi b{font-family:var(--f-display);font-weight:600;font-size:30px;line-height:1}
+.floors{display:flex;flex-direction:column;gap:10px}
+.floor{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;align-items:stretch}
+.floor-label{font-family:var(--f-display);font-weight:600;font-size:20px;display:flex;align-items:center;color:var(--muted)}
+.rooms{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+.room{position:relative;border:1px solid var(--line);border-radius:14px;padding:9px 9px 8px 12px;text-align:left;display:flex;flex-direction:column;gap:5px;min-height:92px;background:var(--surface);color:var(--fg);overflow:hidden}
+.room::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+.room:hover{border-color:var(--c)}
+.room.dim{opacity:.18}
+.room.picked{outline:2px solid var(--accent);outline-offset:-2px;background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.room .no{font-family:var(--f-mono);font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:4px}
+.room .lbl{font-size:11px;font-weight:600;line-height:1.25;color:var(--c)}
+.room .sub{font-size:10px;color:var(--muted);line-height:1.3}
+.room .who{font-size:10px;color:var(--muted);margin-top:auto;display:flex;justify-content:space-between;gap:4px;white-space:nowrap;overflow:hidden}
+.room .cam{color:var(--accent)}
+.room .tick{position:absolute;top:7px;right:7px;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--muted)}
+.room.picked .tick{background:var(--accent);border-color:var(--accent)}
+.assign-bar{position:sticky;bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border:1px solid var(--accent);border-radius:18px;z-index:6}
+.assign-bar .input{flex:1;min-width:160px;width:auto}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(5,6,8,.55);z-index:40}
+.sheet{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--surface);border-left:1px solid var(--line);z-index:41;display:flex;flex-direction:column;box-shadow:var(--shadow);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px);animation:slide .2s ease}
+@keyframes slide{from{transform:translateX(30px);opacity:.5}}
+.sheet-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start}
+.sheet-head .big{font-family:var(--f-display);font-weight:800;font-size:38px;line-height:1}
+.sheet-body{overflow:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:20px;flex:1}
+.sheet-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.fact{background:var(--surface-2);border-radius:14px;padding:10px 12px;font-size:14px;min-width:0}
+.fact span{display:block;font-size:11px;color:var(--muted)}
+.sec-t{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.check{border:1.5px dashed var(--line);background:var(--surface);border-radius:14px;padding:12px;font-size:14px;display:flex;gap:10px;align-items:center;color:var(--muted);text-align:left;min-height:52px}
+.check i{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--muted);flex:none;display:grid;place-items:center;font-style:normal;font-size:13px}
+.check[aria-pressed="true"]{border-style:solid;border-color:var(--ok);color:var(--fg);background:color-mix(in srgb,var(--ok) 10%,var(--surface))}
+.check[aria-pressed="true"] i{background:var(--ok);border-color:var(--ok);color:var(--on-color)}
+.photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ph{position:relative;aspect-ratio:4/3;max-width:100%;border-radius:12px;overflow:hidden;background:var(--surface-2) center/cover no-repeat;border:1px solid var(--line);margin:0}
+.ph .rm{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:14px;line-height:1;padding:0}
+.ph figcaption{position:absolute;left:0;right:0;bottom:0;padding:14px 8px 5px;font-size:10px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65))}
+.shoot{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.shoot label{cursor:pointer}
+.shoot .btn{border-style:dashed;min-height:64px;flex-direction:column;gap:4px;font-size:13px}
+.shoot .btn svg{width:22px;height:22px;color:var(--accent)}
+.need{font-size:12px;color:var(--muted);text-align:center}
+.timeline{display:flex;flex-direction:column;gap:10px;border-left:1px solid var(--line);padding-left:14px}
+.timeline div{position:relative;font-size:13px}
+.timeline div::before{content:"";position:absolute;left:-18px;top:7px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.timeline time{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-right:6px}
+
+/* teams */
+.teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.team{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.team-top{display:flex;align-items:center;gap:10px}
+.team-top b{font-weight:500;flex:1;min-width:0}
+.members{display:flex;flex-wrap:wrap;gap:6px}
+.member{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:999px;padding:3px 10px 3px 3px;font-size:13px}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px}
+.stats3 b{display:block;font-family:var(--f-mono);font-size:16px}
+.room-chips{display:flex;flex-wrap:wrap;gap:4px}
+.room-chips button{font-family:var(--f-mono);font-size:11px;border:0;border-radius:6px;padding:2px 7px;background:var(--surface-2);color:var(--c);border-left:3px solid var(--c)}
+
+/* schedule */
+.sched td,.sched th{padding:8px 6px;text-align:center}
+.sched td:first-child,.sched th:first-child{text-align:left;padding-left:16px;position:sticky;left:0;background:var(--surface);z-index:1}
+.sched th.tcol,.sched td.tcol{background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
+.shift{border:1px solid var(--line);background:var(--surface-2);border-radius:10px;min-width:58px;padding:6px 4px;font-size:12px;line-height:1.2;display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+.shift.w{color:var(--fg);border-color:color-mix(in srgb,var(--ok) 50%,var(--line));background:color-mix(in srgb,var(--ok) 10%,var(--surface))}
+.shift.off{color:var(--muted);background:transparent;border-style:dashed}
+.shift .ot{font-family:var(--f-mono);font-size:11px;color:var(--warn)}
+.sched tr.me td{background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
+.msched{border-collapse:separate;border-spacing:0;font-size:12px}
+.msched th,.msched td{padding:3px 1px;text-align:center;border-bottom:1px solid var(--line)}
+.msched th:first-child,.msched td:first-child{text-align:left;padding:4px 12px 4px 16px;position:sticky;left:0;background:var(--surface);z-index:1;white-space:nowrap}
+.msched th{font-weight:500;color:var(--muted);line-height:1.15}
+.msched th b{display:block;color:var(--fg);font-family:var(--f-mono);font-weight:500;font-size:12px}
+.msched .we{background:color-mix(in srgb,var(--fg) 4%,transparent)}
+.msched .tcol{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+.msched th.tcol b{color:var(--accent)}
+.msched td.sum{font-family:var(--f-mono);padding:0 10px;white-space:nowrap}
+.msched thead th:nth-last-child(-n+2){padding:0 8px;white-space:nowrap}
+.msched tfoot td{font-family:var(--f-mono);color:var(--muted);border-bottom:0;padding-top:8px}
+.msched tr.me td:first-child{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.dc{width:26px;height:30px;border-radius:7px;border:1px solid transparent;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;line-height:1;padding:0;background:transparent;color:var(--muted)}
+.dc.w{background:color-mix(in srgb,var(--ok) 22%,var(--surface));border-color:color-mix(in srgb,var(--ok) 45%,var(--line));color:var(--fg)}
+.dc.off{border:1px dashed var(--line)}
+.dc .ot{font-family:var(--f-mono);font-size:9.5px;color:var(--warn);font-weight:600;margin-top:1px}
+button.dc:hover{outline:2px solid color-mix(in srgb,var(--accent) 45%,transparent)}
+.mon-sw{display:inline-flex;align-items:center;gap:6px}
+.mon-sw b{font-weight:500;min-width:120px;text-align:center}
+.legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:10px 18px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+.legend .dc{width:18px;height:20px;cursor:default}
+.ot-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:14px 18px;border-top:1px solid var(--line)}
+
+/* stock */
+.locs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.loc{display:flex;flex-direction:column;gap:10px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px}
+.loc[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 22px -6px var(--accent)}
+.loc .name{font-family:var(--f-display);font-weight:600;font-size:20px;line-height:1}
+.loc.main-store{grid-column:span 2}
+.meter{height:6px;border-radius:99px;background:var(--surface-2);overflow:visible}
+.meter i{display:block;height:100%;border-radius:99px;background:var(--m,var(--ok));box-shadow:0 0 6px color-mix(in srgb,var(--m,var(--ok)) 80%,transparent),0 0 16px color-mix(in srgb,var(--m,var(--ok)) 45%,transparent)}
+.stock-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line)}
+.stock-row:last-child{border-bottom:0}
+.stock-row .nm{display:flex;flex-direction:column;min-width:0}
+.stock-row .nm b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qty{display:flex;flex-direction:column;gap:7px}
+.qty .mono{font-size:13px}
+.stepper{display:flex;align-items:center;gap:6px}
+.stk-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.access{display:flex;gap:14px;align-items:flex-start;padding:14px 18px;margin-bottom:16px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+.access .ico{flex:none;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.access .ico svg{width:18px;height:18px}
+.access b{font-weight:600}.access p{margin-top:4px;max-width:70ch;line-height:1.5}
+.acc-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.stepper button{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);font-size:18px;line-height:1}
+.matrix td,.matrix th{padding:9px 10px;text-align:center;font-family:var(--f-mono);font-size:12px}
+.matrix td:first-child,.matrix th:first-child{text-align:left;font-family:var(--f-body);font-size:13px;position:sticky;left:0;background:var(--surface);z-index:1}
+.cell{display:inline-block;min-width:38px;padding:3px 6px;border-radius:7px;border:0;background:color-mix(in srgb,var(--m) 16%,transparent);color:var(--fg);box-shadow:0 0 10px -3px var(--m)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:10px;height:10px;border-radius:3px;background:var(--m);box-shadow:0 0 8px var(--m)}
+
+/* lost, chat, admin */
+.lf{display:flex;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line)}
+.lf:last-child{border-bottom:0}
+.lf-ph{width:60px;height:60px;border-radius:14px;background:var(--surface-2) center/cover no-repeat;display:grid;place-items:center;color:var(--muted);flex:none}
+.lf-ph svg{width:22px;height:22px}
+.lf-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.lf-meta{font-size:12px;color:var(--muted)}
+.linkish{border:0;background:none;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.form{display:flex;flex-direction:column;gap:12px;padding:18px}
+#lf-preview{max-width:100%;max-height:160px;border-radius:12px;object-fit:cover}
+.chat{display:grid;grid-template-columns:230px minmax(0,1fr);gap:18px;align-items:start}
+.chans{display:flex;flex-direction:column;gap:4px}
+.chan{display:flex;align-items:center;gap:10px;border:1px solid transparent;background:transparent;border-radius:14px;padding:9px 10px;text-align:left;color:var(--muted)}
+.chan[aria-pressed="true"]{background:var(--surface);border-color:var(--line);color:var(--fg)}
+.chan .count{margin-left:auto;font-family:var(--f-mono);font-size:11px}
+.msgs{overflow:auto;height:min(54vh,520px);padding:18px;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;gap:10px;align-items:flex-start;max-width:85%}
+.msg.mine{margin-left:auto;flex-direction:row-reverse}
+.bw{min-width:0;display:flex;flex-direction:column;gap:3px}
+.msg.mine .bw{align-items:flex-end}
+.msg-meta{font-size:11px;color:var(--muted)}
+.msg-meta b{color:var(--fg);font-weight:500}
+.bubble{background:var(--surface-2);border-radius:5px 16px 16px 16px;padding:9px 13px;overflow-wrap:anywhere}
+.msg.mine .bubble{background:var(--accent);color:var(--accent-ink);border-radius:16px 5px 16px 16px}
+.orig{font-size:11px;color:var(--muted)}
+.rtag{border:0;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:0 5px;font-size:13px}
+.msg.mine .rtag{background:rgba(0,0,0,.15);color:inherit}
+.quick{display:flex;gap:6px;overflow-x:auto;padding:0 18px 10px}
+.composer{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--line)}
+.switch{width:44px;height:26px;border-radius:99px;border:0;background:var(--surface-2);position:relative;padding:0;flex:none}
+.switch::after{content:"";position:absolute;top:4px;left:4px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:left .15s}
+.switch[aria-checked="true"]{background:var(--accent-soft)}
+.switch[aria-checked="true"]::after{left:22px;background:var(--accent)}
+.notice{display:flex;gap:12px;align-items:flex-start;padding:14px 18px;border-radius:18px;background:var(--accent-soft);color:var(--fg);font-size:14px}
+.notice svg{width:20px;height:20px;color:var(--accent);flex:none;margin-top:1px}
+.temp{border:1px dashed var(--accent);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.temp .mono{font-size:22px;letter-spacing:.1em;color:var(--accent)}
+.perm td:not(:first-child),.perm th:not(:first-child){text-align:center}
+.perm input{width:18px;height:18px;accent-color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:11px 18px;border-radius:12px;font-size:14px;z-index:60;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+
+/* dashboard + issue tracking */
+.dash{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.dash>.panel{min-width:0}
+.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.kpis.k4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.kpi small{color:var(--muted);font-size:12px}
+.kpi b.money{font-size:26px}
+.pbody{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.hbar{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr) auto;gap:12px;align-items:center;font-size:13px}
+.hbar .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar .tr{height:10px;border-radius:99px;background:var(--surface-2);position:relative}
+.hbar .tr i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--m,var(--accent));box-shadow:0 0 10px color-mix(in srgb,var(--m,var(--accent)) 55%,transparent)}
+.hbar .tr .avg{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--fg);opacity:.5;border-radius:2px}
+.hbar .v{font-family:var(--f-mono);font-size:12px;white-space:nowrap;text-align:right}
+.stack{display:flex;height:14px;border-radius:99px;overflow:hidden;background:var(--surface-2)}
+.stack i{display:block;height:100%;background:var(--m)}
+.slegend{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:12px;color:var(--muted)}
+.slegend span{display:inline-flex;align-items:center;gap:6px}.slegend b{color:var(--fg);font-family:var(--f-mono);font-weight:500}
+.slegend i{width:9px;height:9px;border-radius:3px;background:var(--m)}
+.insight{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border-radius:16px;background:color-mix(in srgb,var(--accent) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line))}
+.insight .ico{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);font-weight:800}
+.insight b{font-weight:600}
+.ilog{width:100%;border-collapse:collapse;font-size:13px}
+.ilog th,.ilog td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+.ilog th{font-weight:500;color:var(--muted);font-size:12px}
+.ilog td.n{font-family:var(--f-mono);text-align:right}
+.ilog tr.new td{background:color-mix(in srgb,var(--ok) 10%,transparent)}
+.spark{display:flex;align-items:flex-end;gap:3px;height:70px}
+.spark i{flex:1;background:color-mix(in srgb,var(--accent) 70%,transparent);border-radius:3px 3px 0 0;min-height:2px}
+.spark i.t{background:var(--accent);box-shadow:0 0 10px color-mix(in srgb,var(--accent) 60%,transparent)}
+.issue-form{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.4fr) 90px auto;gap:8px;align-items:end;padding:14px 18px;border-top:1px solid var(--line)}
+.issue-form label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+.lowlist{display:flex;flex-direction:column}
+.lowlist button{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line);text-align:left;background:none;border-left:0;border-right:0;border-top:0;color:var(--fg);font-size:13px}
+.lowlist button:last-child{border-bottom:0}
+@media (max-width:760px){.kpi b.money{font-size:21px}.hbar{grid-template-columns:84px minmax(0,1fr) auto;gap:8px;font-size:12px}.ilog th:last-child,.ilog td:last-child{display:none}}
+@media (max-width:1100px){.dash>.panel,.dash>.insight{grid-column:span 12}.kpis.k4{grid-template-columns:repeat(2,minmax(0,1fr))}.issue-form{grid-template-columns:1fr 1fr}}
+@media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.rooms{grid-template-columns:repeat(5,minmax(0,1fr))}.grid-2{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .login{grid-template-columns:1fr}
+  .login-art{min-height:260px;border-right:0;border-bottom:1px solid var(--line);padding:28px max(16px,env(safe-area-inset-left,0px))}
+  .roles{grid-template-columns:1fr}
+  .role-card{flex-direction:row;align-items:center}
+  .shell{grid-template-columns:1fr}
+  .rail{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));border-right:0;border-top:1px solid var(--line);z-index:20}
+  .rail .brand,.rail-foot{display:none}
+  .rail nav{flex-direction:row;width:100%;overflow-x:auto;scrollbar-width:none}
+  .nav-btn{flex:1 0 64px;flex-direction:column;gap:3px;font-size:10px;padding:7px 4px;align-items:center;text-align:center}
+  .nav-btn .count{display:none}
+  .topbar{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .topbar .brand{display:block}
+  .topbar .logo{height:34px}
+  .topbar .wm-name{font-size:13px}.topbar .wm-sub{display:none}
+  .topbar .concept,.topbar .langs{display:none}
+  .topbar .lang-sel{display:block}
+  .content{padding-bottom:104px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .floor{grid-template-columns:1fr}
+  .rooms{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .assign-bar{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+  .chat{grid-template-columns:1fr}.chans{flex-direction:row;overflow-x:auto}.chan{white-space:nowrap}.chan .count{display:none}
+  .msg{max-width:100%}
+  .loc.main-store{grid-column:1/-1}
+  .locs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stock-row{grid-template-columns:minmax(0,1fr) auto}
+  .stock-row .qty{grid-column:1/-1;grid-row:2}
+  .sheet{top:auto;left:0;width:100%;max-height:92%;border-left:0;border-top:1px solid var(--line);border-radius:24px 24px 0 0;animation:up .22s ease;padding-left:env(safe-area-inset-left,0px)}
+  @keyframes up{from{transform:translateY(40px);opacity:.5}}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div id="app"></div>
+
+<script>
+(function(){
+"use strict";
+const BRAND = {name:"THE SOTA COLLECTION", sub:"", logo:"data:image/png;base64,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"};
+
+/* ================= i18n ================= */
+const L = { ko:0, ru:1, en:2, uz:3 };
+const T = {
+  claim:["객실, 팀, 재고, 근무표까지<br><b>한 화면에서.</b>","Номера, команды, склад и график —<br><b>в одном экране.</b>","Rooms, teams, stock and rota,<br><b>on one screen.</b>","Xonalar, jamoalar, ombor va jadval —<br><b>bitta ekranda.</b>"],
+  login_foot:["컨셉 데모 · 입력값은 저장·전송되지 않습니다 · 모든 데이터와 이름은 예시","Концепт-демо · ничего не сохраняется и не отправляется · все данные и имена выдуманы","Concept demo · nothing you type is stored or sent · all data and names are made up","Konsept-demo · kiritilgan maʼlumot saqlanmaydi va yuborilmaydi · barcha maʼlumotlar va ismlar toʻqima"],
+  login_title:["로그인","Вход","Sign in","Kirish"], id:["직원 ID","ID сотрудника","Staff ID","Xodim ID"], pw:["비밀번호","Пароль","Password","Parol"], signin:["로그인","Войти","Sign in","Kirish"],
+  no_signup:["회원가입은 없습니다. 계정은 관리자가 발급합니다.","Регистрации нет. Аккаунт выдаёт администратор.","There is no sign-up. Accounts are issued by the admin.","Roʻyxatdan oʻtish yoʻq. Akkauntlarni administrator beradi."],
+  demo_as:["데모 역할로 보기","Посмотреть демо как","Try a demo role","Demo rolni sinab koʻring"],
+  role_att:["메이드","Горничная","Room attendant","Xona tozalovchi"], role_hk:["하우스키퍼","Хаускипер","Housekeeper","Xauskiper"], rc_team:["프론트 (직접 가져감)","Ресепшен (взял сам)","Front desk (took itself)","Resepshn (oʻzi oldi)"], sa_title:["창고 출입","Доступ к складам","Store access","Omborga kirish"], acc_body:["창고는 하우스키퍼와 프론트만 출입합니다. 메이드는 창고에 들어가지 않고, 필요한 소모품은 하우스키퍼가 지급합니다. 프론트가 직접 가져갈 때는 무엇을 몇 개 가져갔는지 기록합니다.","На склады заходят только хаускипер и ресепшен. Горничные на склад не заходят, расходники им выдаёт хаускипер. Если ресепшен берёт сам, он отмечает, что и сколько взял.","Only the housekeeper and the front desk enter the stores. Room attendants don't go in: the housekeeper issues their supplies. When the front desk takes something itself, it logs what and how much.","Omborlarga faqat xauskiper va resepshn kiradi. Xona tozalovchilar omborga kirmaydi, sarf materiallarini ularga xauskiper beradi. Resepshn oʻzi olsa, nima va qancha olganini belgilaydi."], acc_no:["출입 불가","не заходят","no access","kirmaydi"], b_issue:["지급","Выдать","Issue","Berish"], b_took:["가져감 기록","Отметить, что взял","Log what I took","Olganimni belgilash"], b_in:["입고","Приход","Restock","Kirim"], sh_issue:["팀에 지급","Выдать команде","Issue to a team","Jamoaga berish"], sh_took:["프론트: 가져간 물품","Ресепшен: что взял","Front desk: what I took","Resepshn: nima oldim"], sh_in:["입고 기록","Приход на склад","Restock","Omborga kirim"], in_stock:["창고 재고","На складе","In stock","Omborda"], sk_save:["기록하기","Записать","Save","Yozish"], sk_cancel:["취소","Отмена","Cancel","Bekor qilish"], t_took:["기록됨: {item} {q} {u}","Записано: «{item}», {q} {u}","Logged: {item}, {q} {u}","Yozildi: {item}, {q} {u}"], t_in:["입고됨: {item} +{q} {u}","Приход: «{item}» +{q} {u}","Restocked: {item} +{q} {u}","Kirim: {item} +{q} {u}"], t_short:["창고 재고가 부족합니다: {n} {u}","На складе только {n} {u}","Only {n} {u} in stock","Omborda faqat {n} {u}"], p_issue:["소모품 지급","Выдача расходников","Issue supplies","Sarf materiallarini berish"], hk_issues:["지급은 하우스키퍼만 합니다.","Выдаёт только хаускипер.","Only the housekeeper issues supplies.","Faqat xauskiper beradi."], role_sup:["프론트","Ресепшн","Front desk","Resepshn"], role_admin:["관리자","Администратор","Admin","Administrator"],
+  nav_home:["내 객실","Мои номера","My rooms","Mening xonalarim"], nav_board:["객실 현황","Все номера","All rooms","Barcha xonalar"], nav_dash:["대시보드","Сводка","Dashboard","Umumiy"], nav_co:["체크아웃","Выезды","Checkouts","Chiqishlar"], nav_sched:["근무표","Расписание","Schedule","Jadval"],
+  nav_stock:["재고","Склад","Stock","Ombor"], nav_staff:["팀","Персонал","Staff","Xodimlar"], nav_lost:["분실물","Находки","Lost & found","Topilmalar"], nav_chat:["채팅","Чат","Chat","Chat"], nav_admin:["계정 관리","Аккаунты","Accounts","Akkauntlar"],
+  logout:["로그아웃","Выйти","Sign out","Chiqish"], concept:["컨셉 · 샘플 데이터","Концепт · пример данных","Concept · sample data","Konsept · namuna maʼlumot"], theme:["테마 전환","Сменить тему","Switch theme","Mavzuni almashtirish"],
+  today:["10월 28일 수요일","Среда, 28 октября","Wednesday, 28 October","Chorshanba, 28-oktabr"],
+  hello_m:["좋은 아침이에요,","Доброе утро,","Good morning,","Xayrli tong,"], hello_d:["좋은 오후예요,","Добрый день,","Good afternoon,","Xayrli kun,"], hello_e:["좋은 저녁이에요,","Добрый вечер,","Good evening,","Xayrli kech,"],
+  rooms_left_n:["오늘 남은 객실 {n}개","Сегодня осталось номеров: {n}","{n} rooms left today","Bugun qolgan xonalar: {n}"], team_with:["오늘 팀","Сегодня в команде","Today's team","Bugungi jamoa"],
+  team_credit:["팀원 누가 완료해도 모두에게 기록됩니다.","Кто бы из команды ни завершил номер, он засчитывается всем.","Whoever on the team finishes a room, it counts for everyone.","Jamoadan kim xonani tugatsa ham, hammaga hisoblanadi."],
+  done_by_team:["팀 완료 {n}","Убрано командой: {n}","Team done: {n}","Jamoa tugatdi: {n}"],
+  f_todo:["청소할 객실","Нужна уборка","To clean","Tozalash kerak"], f_mine_all:["팀 객실 전체","Все номера команды","All team rooms","Jamoaning barcha xonalari"], all_done:["오늘 객실을 모두 끝냈어요. 수고하셨어요!","Все номера на сегодня готовы. Отличная работа!","All rooms done for today. Nice work!","Bugungi barcha xonalar tayyor. Barakalla!"],
+  st_VD:["퇴실 · 청소 필요","Чек-аут, грязный","Checked out, dirty","Chiqdi, iflos"], st_OD:["재실 · 청소 필요","Занят, грязный","Occupied, dirty","Band, iflos"],
+  st_VC:["청소 완료 · 점검 필요","Убран, нужна проверка","Clean, needs inspection","Tozalandi, tekshiruv kerak"], st_INS:["점검 완료 · 공실","Проверен, свободен","Inspected, vacant","Tekshirildi, boʻsh"],
+  st_ARR:["입실 {t}","Заезд {t}","Check-in {t}","Kirish {t}"], st_ARR0:["입실 예정","Заезд","Check-in","Kirish"], st_OC:["재실 · 정돈","Занят, чисто","Occupied, clean","Band, toza"], st_OOO:["사용 불가","Не в продаже","Out of order","Sotuvda emas"],
+  out_at:["퇴실 {t}","выезд {t}","check-out {t}","chiqish {t}"], in_at:["입실 {t}","заезд {t}","check-in {t}","kirish {t}"], late:["레이트","поздний","late","kech"],
+  unassigned:["미배정","Не назначен","Unassigned","Biriktirilmagan"], room:["객실","Номер","Room","Xona"],
+  act_finish:["청소 완료","Завершить","Finish","Tugatish"], act_inspect:["점검 완료","Проверен","Mark inspected","Tekshirildi"], act_dirty:["재청소 요청","Вернуть на уборку","Send back","Qaytarish"],
+  act_ooo:["사용 불가 처리","Снять с продажи","Set out of order","Sotuvdan olish"], act_back:["판매 재개","Вернуть в продажу","Back in service","Sotuvga qaytarish"], act_co:["체크아웃 처리","Отметить выезд","Mark checked out","Chiqdi deb belgilash"],
+  close:["닫기","Закрыть","Close","Yopish"], team:["팀","Команда","Team","Jamoa"], no_team:["— 미배정 —","— не назначен —","— unassigned —","— biriktirilmagan —"],
+  fin_title:["청소 완료","Завершение уборки","Finish cleaning","Tozalashni tugatish"], fin_photos:["객실 사진","Фото номера","Room photos","Xona rasmlari"],
+  camera:["카메라","Камера","Camera","Kamera"], gallery:["갤러리에서 여러 장","Несколько из галереи","Several from gallery","Galereyadan bir nechta"], demo_photo:["데모: 예시 사진 넣기","Демо: вставить пример фото","Demo: add a sample photo","Demo: namuna rasm qoʻshish"],
+  fin_check:["모두 확인했으면 하나씩 눌러주세요","Отметь каждый пункт, когда проверил","Tap each item once you've checked it","Har bir bandni tekshirgach belgilang"],
+  ck_towel:["수건","Полотенца","Towels","Sochiqlar"], ck_water:["생수","Вода","Water","Suv"], ck_tea:["커피·차","Кофе и чай","Coffee & tea","Qahva va choy"], ck_wash:["세탁기","Стиральная машина","Washing machine","Kir yuvish mashinasi"], ck_micro:["전자레인지","Микроволновка","Microwave","Mikrotoʻlqinli pech"], ck_ac:["에어컨","Кондиционер","Air conditioner","Konditsioner"],
+  fin_done:["완료하고 보내기","Готово, отправить","Done, send","Tayyor, yuborish"], fin_need:["사진 1장 이상과 체크리스트 전체가 필요합니다 ({c}/6)","Нужно хотя бы 1 фото и все пункты чек-листа ({c}/6)","Needs at least 1 photo and every checklist item ({c}/6)","Kamida 1 ta rasm va barcha bandlar kerak ({c}/6)"],
+  t_fin:["{r} 완료 · 팀 전원에게 기록","{r} готов · засчитано всей команде","{r} done · counted for the whole team","{r} tayyor · butun jamoaga hisoblandi"],
+  photos:["청소 사진","Фото уборки","Cleaning photos","Tozalash rasmlari"], no_photos:["아직 사진이 없습니다","Фото пока нет","No photos yet","Hali rasm yoʻq"], sample_photo:["예시","Пример","Sample","Namuna"],
+  history:["기록","История","History","Tarix"], status:["상태","Статус","Status","Holat"], room_type:["타입","Тип","Type","Turi"], checkout_at:["체크아웃","Выезд","Check-out","Chiqish"], co_next:["입실","Заезд","Check-in","Kirish"],
+  credited:["완료 기록","Засчитано","Credited to","Hisoblandi"],
+  kpi_dep:["남은 체크아웃","Осталось выездов","Check-outs left","Qolgan chiqishlar"], kpi_dirty:["청소 필요","Нужна уборка","To clean","Tozalash kerak"], kpi_insp:["점검 필요","Нужна проверка","Needs inspection","Tekshiruv kerak"], kpi_ready:["판매 가능","Готовы","Ready","Tayyor"], kpi_open:["미배정","Не назначено","Unassigned","Biriktirilmagan"],
+  assign_mode:["객실 배정","Назначить номера","Assign rooms","Xonalarni biriktirish"], assign_done:["배정 끝내기","Готово","Done","Tayyor"], assign_pick:["객실을 눌러 선택한 뒤 팀을 고르세요","Нажми на номера, потом выбери команду","Tap rooms, then pick a team","Xonalarni bosing, keyin jamoani tanlang"],
+  assign_btn:["{n}개 배정","Назначить: {n}","Assign {n}","{n} tasini biriktirish"], t_assigned:["{n}개 객실 → {team}","{n} номеров → {team}","{n} rooms → {team}","{n} ta xona → {team}"], all:["전체","Все","All","Hammasi"], search:["객실 번호","Номер комнаты","Room number","Xona raqami"],
+  co_title:["오늘 체크아웃","Выезды сегодня","Today's check-outs","Bugungi chiqishlar"], guest:["투숙객","Гость","Guest","Mehmon"], co_time:["시간","Время","Time","Vaqt"], stage:["단계","Этап","Stage","Bosqich"], overdue:["지연","Просрочен","Overdue","Kechikdi"], priority:["우선","Приоритет","Priority","Ustuvor"],
+  staff_title:["오늘 팀","Команды на сегодня","Today's teams","Bugungi jamoalar"], staff_hint:["객실 배정은 '객실 현황'에서 합니다. 여기서는 사람을 팀으로 묶습니다.","Номера назначаются во вкладке «Все номера». Здесь собираешь людей в команды.","Rooms are assigned on the All rooms board. Here you group people into teams.","Xonalar «Barcha xonalar» ekranida biriktiriladi. Bu yerda odamlar jamoalarga boʻlinadi."],
+  new_team:["새 팀","Новая команда","New team","Yangi jamoa"], people:["직원","Сотрудники","People","Xodimlar"], rooms_n:["객실","Номеров","Rooms","Xonalar"], done:["완료","Готово","Done","Tayyor"], left:["남음","Осталось","Left","Qoldi"], in_team:["팀","Команда","Team","Jamoa"], off_today:["오늘 휴무","Сегодня выходной","Off today","Bugun dam"],
+  t_moved:["{p} → {team}","{p} → {team}","{p} → {team}","{p} → {team}"], t_newteam:["새 팀이 만들어졌습니다","Создана новая команда","New team created","Yangi jamoa yaratildi"], solo:["1인","одна","solo","yakka"],
+  sched_title:["근무표","Расписание","Schedule","Jadval"], week:["10월 26일 – 11월 1일","26 октября – 1 ноября","26 Oct – 1 Nov","26-okt – 1-noy"], mon_hint:["프론트가 한 달 근무표를 만들고 모두가 같은 표를 봅니다.","Ресепшн составляет график на месяц — все видят один и тот же.","The front desk builds the month; everyone sees the same schedule.","Resepshn oylik jadval tuzadi — hamma bir xil jadvalni koʻradi."], fill52:["5/2 패턴으로 채우기","Заполнить по 5/2","Fill as 5/2","5/2 boʻyicha toʻldirish"], t_fill:["{m}: 5/2 패턴으로 채웠습니다. 필요한 칸만 고치세요.","{m}: заполнено по 5/2 — поправь нужные клетки.","{m} filled as 5/2. Adjust any cells you need.","{m}: 5/2 boʻyicha toʻldirildi — kerakli kataklarni tuzating."], on_shift:["근무 인원","На смене","On shift","Smenada"], ot_who:["대상","Кому","Who","Kimga"], teams_g:["오늘의 팀","Команды сегодня","Today's teams","Bugungi jamoalar"], people_g:["직원","Сотрудники","Staff","Xodimlar"], ot_add:["추가","Начислить","Add","Qoʻshish"], lg_w:["근무","рабочий","work","ish"], lg_off:["휴무","выходной","off","dam"], lg_ot:["초과 근무","переработка","overtime","qoʻshimcha ish"], prev_m:["이전 달","Предыдущий месяц","Previous month","Oldingi oy"], next_m:["다음 달","Следующий месяц","Next month","Keyingi oy"], shift_w:["근무","Раб.","Work","Ish"], shift_off:["휴무","Вых.","Off","Dam"],
+  days_worked:["근무일","Дней","Days","Kun"], ot_total:["초과","Перераб.","Overtime","Qoʻshimcha ish"], h:["시간","ч","h","s"],
+  ot_for:["초과 근무","Переработка","Overtime","Qoʻshimcha ish"], ot_day:["날짜","День","Day","Kun"], ot_btn:["추가","Начислить","Add","Qoʻshish"],
+  t_ot:["{d}: {who} +{h}시간","{d}: +{h} ч — {who}","{d}: +{h}h — {who}","{d}: +{h} soat — {who}"], sched_hint:["칸을 누르면 근무/휴무가 바뀝니다.","Клик по клетке — рабочий/выходной.","Tap a cell to switch work/off.","Ish/dam almashtirish uchun katakni bosing."], sched_ro:["근무표는 프론트가 관리합니다.","Расписание ведёт ресепшн.","The front desk manages the schedule.","Jadvalni resepshn yuritadi."],
+  my_week:["{m}: 근무 {d}일 · 초과 {h}시간","{m}: {d} раб. дн. · переработка {h} ч","{m}: {d} work days · {h}h overtime","{m}: {d} ish kuni · {h} soat qoʻshimcha"], reset_ot:["이 날 초과 지우기","Сбросить за день","Clear this day","Shu kunni tozalash"],
+  nav_dash:["대시보드","Сводка","Dashboard","Umumiy"], dash_title:["오늘 한눈에","Всё на одном экране","Everything on one screen","Hammasi bitta ekranda"], dash_sub:["객실, 팀, 재고, 지급 내역이 한 화면에 있습니다.","Номера, команды, склад и выдача — сразу видно, что происходит.","Rooms, teams, stock and issued items at a glance.","Xonalar, jamoalar, ombor va berilganlar bir qarashda."],
+  k_rooms_left:["청소 남음","Осталось убрать","Rooms to clean","Tozalash qoldi"], k_on_shift:["근무 중","На смене","On shift","Smenada"], k_issued_today:["오늘 지급","Выдано сегодня","Issued today","Bugun berildi"], k_month_cost:["이번 달 지급량","Выдано за месяц","Issued this month","Oyda berildi"], u_pcs:["개","шт.","pcs","dona"], k_low:["보충 필요","Нужно пополнить","Needs refill","Toʻldirish kerak"], k_per_room:["객실당 비용","На 1 номер","Per room","1 xonaga"],
+  p_status:["객실 상태","Статусы номеров","Room status","Xona holati"], p_team_cost:["팀별 소모품 사용 (이번 달)","Расход по командам за месяц","Spend by team this month","Jamoalar boʻyicha oylik xarajat"], p_low:["재고 부족","Заканчивается","Running low","Tugayapti"], p_log:["최근 지급 내역","Последние выдачи","Latest issues","Soʻnggi berilganlar"], p_daily:["일별 지급량","Выдача по дням","Issued per day","Kunlik berilgan"], p_top:["많이 쓰는 품목","Что расходуется больше всего","Top consumed items","Eng koʻp sarflanadigan"],
+  k_teams:["팀 {n}개","Команд: {n}","{n} teams","{n} ta jamoa"], k_locs:["보관 장소 {n}곳","Мест хранения: {n}","{n} storage spots","{n} ta joy"], per_room_short:["객실당","на номер","/room","1 xonaga"], avg_line:["평균","среднее","average","oʻrtacha"], rooms_done:["객실 {n}개","{n} номеров","{n} rooms","{n} xona"],
+  ins_title:["{team} 팀은 객실당 평균보다 {p}% 더 사용합니다","{team}: расход на номер на {p}% выше среднего","{team} uses {p}% more per room than average","{team}: 1 xonaga sarf oʻrtachadan {p}% koʻp"], ins_body:["이제 누가 무엇을 얼마나 가져갔는지, 어디서 사용량을 맞출 수 있는지 보입니다.","Теперь видно, кто, что и сколько взял, и где расход можно выровнять.","Now you can see who took what and how much, and where use can be evened out.","Kim nima va qancha olgani, sarfni qayerda tenglash mumkinligi koʻrinadi."],
+  by_issue:["지급·사용","Выдача и расход","Issues & spend","Berish va sarf"], issue_title:["지급 기록","Учёт выдачи","Issue log","Berish hisobi"], when:["시간","Когда","When","Qachon"], who_team:["팀","Команда","Team","Jamoa"], qty:["수량","Кол-во","Qty","Soni"], cost:["금액","Сумма","Cost","Summa"], issued_by:["지급자","Выдал","Issued by","Bergan"],
+  issue_btn:["지급 기록","Записать выдачу","Log issue","Yozib qoʻyish"], t_issued:["{team}: {item} {q} {u} 지급 기록됨","{team}: выдано «{item}» — {q} {u}","{team}: issued {item} — {q} {u}","{team}: «{item}» berildi — {q} {u}"], all_teams:["모든 팀","Все команды","All teams","Barcha jamoalar"], today_lbl:["오늘","сегодня","today","bugun"],
+  stock_title:["재고","Склад","Stock","Ombor"], by_loc:["위치별","По местам","By location","Joy boʻyicha"], by_item:["품목별 전체 표","Вся таблица","Full table","Toʻliq jadval"],
+  store_14:["창고 · 객실 소모품","Склад расходников: мыло, шампуни, бумага","Store: guest consumables","Ombor: mehmon sarf materiallari"], store_29:["창고 · 세제·청소도구","Хозсклад: химия и инвентарь","Supplies: chemicals and tools","Ombor: kimyo va asboblar"], store_28:["창고 · 컵·주전자·드라이어","Склад: кружки, чайники, фены","Store: mugs, kettles, dryers","Ombor: krujkalar, choynaklar, fenlar"], floor_closet:["린넨실","Бельевая","Linen room","Choyshab xonasi"],
+  stock_note:["29층·28층·14층 창고 세 곳의 수량을 한 곳에서 봅니다.","Три склада на 29, 28 и 14 этажах, всё в одном месте.","Three stores on 29F, 28F and 14F, in one place.","29, 28 va 14-qavatdagi uchta ombor — bir joyda."],
+  ok:["정상","Норма","OK","Yetarli"], low:["부족","Мало","Low","Kam"], critical:["긴급","Критично","Critical","Juda kam"], low_items:["부족 {n}","Мало: {n}","{n} low","{n} ta kam"],
+  refill:["적정량까지 보충","Пополнить до нормы","Refill to par","Meʼyorgacha toʻldirish"], took:["사용","Взял","Took","Oldim"], t_refill:["{loc}: {n}개 품목 보충 요청됨","{loc}: заявка на пополнение, позиций: {n}","{loc}: refill requested for {n} items","{loc}: {n} ta mahsulotga soʻrov yuborildi"], t_nofill:["보충할 품목이 없습니다","Пополнять нечего","Nothing to refill","Toʻldirish shart emas"],
+  total:["합계","Всего","Total","Jami"], item:["품목","Позиция","Item","Mahsulot"],
+  cat_linen:["린넨","Бельё","Linen","Choyshab"], cat_amen:["소모품","Расходники","Supplies","Sarf materiallari"], cat_fridge:["냉장고","Холодильник","Fridge","Muzlatgich"], cat_chem:["세제·도구","Химия и инвентарь","Chemicals & tools","Kimyo va asboblar"], cat_equip:["컵·가전","Посуда и техника","Cups & appliances","Idishlar va texnika"],
+  lf_title:["분실물","Находки","Lost & found","Topilmalar"], lf_new:["분실물 등록","Новая находка","Register an item","Buyumni roʻyxatga olish"], lf_item:["물품","Предмет","Item","Mahsulot"], lf_item_ph:["예: 무선 이어폰","Напр.: наушники","e.g. wireless earbuds","masalan, simsiz quloqchin"],
+  lf_desc:["설명","Описание","Description","Tavsif"], lf_where:["보관 위치","Где хранится","Stored at","Saqlanish joyi"], lf_photo:["사진","Фото","Photo","Rasm"], lf_save:["등록","Сохранить","Register","Roʻyxatga olish"],
+  st_stored:["보관 중","На хранении","Stored","Saqlanmoqda"], st_returned:["반환","Возвращено","Returned","Qaytarildi"], st_disposed:["폐기","Утилизировано","Disposed","Yoʻq qilindi"], lf_return:["반환 처리","Вернули","Mark returned","Qaytarildi"],
+  by:["습득","Нашёл","Found by","Topdi"], t_lf:["분실물 등록됨","Находка сохранена","Item registered","Buyum roʻyxatga olindi"], t_ret:["반환 처리됨","Отмечено","Marked returned","Qaytarildi deb belgilandi"],
+  lf_err:["객실 번호(예: 1407)와 물품을 입력하세요","Укажите номер (напр. 1407) и предмет","Enter a room number (e.g. 1407) and an item","Xona raqami (masalan, 1407) va buyumni kiriting"],
+  ch_all:["하우스키핑 전체","Хаускипинг — все","Housekeeping — all","Xaus-kiping — hammasi"], ch_front:["프론트 데스크","Ресепшн","Front desk","Resepshn"], ch_team:["우리 팀","Наша команда","Our team","Bizning jamoa"],
+  translate:["자동 번역","Автоперевод","Auto-translate","Avto-tarjima"], chat_ph:["메시지 (객실 태그: #1403)","Сообщение (номер: #1403)","Message (tag a room: #1403)","Xabar (xona: #1403)"], send:["보내기","Отправить","Send","Yuborish"], original:["원문","Оригинал","Original","Asl matn"],
+  q1:["#1403 청소 완료했습니다","#1403 убран","#1403 is clean","#1403 tozalandi"], q2:["수건이 부족해요","Не хватает полотенец","Running low on towels","Sochiq kam qoldi"], q3:["5분 후 도착합니다","Буду через 5 минут","There in 5 minutes","5 daqiqada boraman"],
+  acc_title:["계정 관리","Аккаунты","Accounts","Akkauntlar"], acc_notice:["자체 회원가입은 꺼져 있습니다. 새 직원은 관리자만 추가하고 역할을 지정합니다. 언어는 각자 자기 계정에서 바꿉니다.","Самостоятельной регистрации нет. Новых сотрудников добавляет только администратор и назначает роль. Язык каждый меняет сам в своём аккаунте.","There is no self sign-up. Only an admin adds members and sets their role. Each person picks their own language.","Mustaqil roʻyxatdan oʻtish yoʻq. Yangi xodimni faqat administrator qoʻshadi va rol beradi. Tilni har kim oʻz akkauntida tanlaydi."],
+  add_member:["직원 추가","Добавить сотрудника","Add a member","Xodim qoʻshish"], name:["이름","Имя","Name","Ism"], role:["역할","Роль","Role","Rol"], create:["계정 만들기","Создать аккаунт","Create account","Akkaunt yaratish"], last_login:["최근 접속","Последний вход","Last sign-in","Oxirgi kirish"],
+  del:["삭제","Удалить","Delete","Oʻchirish"], del_sure:["정말 삭제?","Точно удалить?","Delete?","Rostdan oʻchirasizmi?"], t_deleted:["{n} 계정 삭제됨","Аккаунт удалён: {n}","Account deleted: {n}","Akkaunt oʻchirildi: {n}"],
+  temp_pw:["임시 비밀번호","Временный пароль","Temporary password","Vaqtinchalik parol"], temp_hint:["직원에게 전달하세요. 첫 로그인 때 바꾸게 됩니다.","Передай сотруднику. При первом входе он сменит пароль.","Give it to the member. They change it at first sign-in.","Xodimga bering. Birinchi kirishda u parolni almashtiradi."],
+  t_created:["{n} 계정 생성됨","Аккаунт создан: {n}","Account created: {n}","Akkaunt yaratildi: {n}"], name_err:["이름을 입력하세요","Введите имя","Enter a name","Ismni kiriting"],
+  perms:["역할별 권한","Права по ролям","Permissions by role","Rollar boʻyicha huquqlar"],
+  p_rooms:["객실 완료·사진","Завершать номера и фото","Finish rooms and photos","Xonani tugatish va rasmlar"], p_inspect:["점검 확인","Подтверждать проверку","Confirm inspection","Tekshiruvni tasdiqlash"], p_assign:["객실·팀 배정","Назначать номера и команды","Assign rooms and teams","Xona va jamoalarni biriktirish"],
+  p_sched:["근무표·초과 근무","График и переработки","Schedule and overtime","Jadval va qoʻshimcha ish"], p_stock_edit:["재고 수정·보충","Менять и пополнять склад","Edit and refill stock","Omborni tahrirlash va toʻldirish"], p_acc:["계정·역할 관리","Аккаунты и роли","Accounts and roles","Akkauntlar va rollar"],
+  t_status:["{r} · {s}","{r} · {s}","{r} · {s}","{r} · {s}"], t_co:["{r} 체크아웃 처리됨","{r}: выезд отмечен","{r} checked out","{r} chiqdi"],
+};
+let lang = "ko";
+const t = (k, v) => { let s = T[k] ? T[k][L[lang]] : k; if(v) for(const x in v) s = s.split("{"+x+"}").join(v[x]); return s; };
+const floorLabel = n => lang==="ko" ? n+"층" : lang==="ru" ? n+" этаж" : lang==="uz" ? n+"-qavat" : "Floor "+n;
+
+/* ================= sample data (all names invented) ================= */
+function rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; let x=Math.imul(seed^seed>>>15,1|seed); x=x+Math.imul(x^x>>>7,61|x)^x; return ((x^x>>>14)>>>0)/4294967296; }; }
+const R = rng(2810);
+const STAFF = [
+  {id:"s1", n:["한서린","Хан Сорин","Han Seorin","Han Seorin"]},
+  {id:"s2", n:["탁소이","Так Сои","Tak Soi","Tak Soi"]},
+  {id:"s3", n:["여하람","Ё Харам","Yeo Haram","Yeo Haram"]},
+  {id:"s4", n:["설지안","Соль Джиан","Seol Jian","Seol Jian"]},
+  {id:"s5", n:["올가","Ольга","Olga","Olga"]},
+  {id:"s6", n:["아이게림","Айгерим","Aigerim","Aigerim"]},
+  {id:"s7", n:["표은결","Пхё Ынгёль","Pyo Eungyeol","Pyo Eungyeol"]},
+  {id:"s8", n:["딜노자","Дильноза","Dilnoza","Dilnoza"]},
+  {id:"s9", n:["카리나","Карина","Karina","Karina"]},
+  {id:"s10", n:["도하늘","До Ханыль","Do Haneul","Do Haneul"]},
+  {id:"s11", n:["모라온","Мо Раон","Mo Raon","Mo Raon"]},
+];
+const SUP = {id:"u1", n:["봉다인","Бон Даин","Bong Dain","Bong Dain"]};
+const ADM = {id:"u0", n:["남윤슬","Нам Юнсыль","Nam Yunseul","Nam Yunseul"]};
+const HK = {id:"u2", n:["키릴","Кирилл","Kirill","Kirill"]};
+const personById = id => id==="u0"?ADM:id==="u1"?SUP:id==="u2"?HK:staffById(id);
+const staffById = id => STAFF.find(s=>s.id===id);
+const sName = s => s ? s.n[L[lang]] : "";
+const firstName = s => { const n = sName(s); return lang==="ko" && n.length===3 && s.n[2].includes(" ") ? n.slice(1) : n.split(" ").slice(-1)[0]; };
+const initials = s => { const n=s.n[2].split(" "); return (n[0][0]+(n[1]?n[1][0]:"")).toUpperCase(); };
+/* today's teams: 1 to 3 people; s11 is off today */
+const TEAMS = [
+  {id:"t1", members:["s8","s9"], floors:[13,14]},
+  {id:"t2", members:["s5","s6"], floors:[11,12]},
+  {id:"t3", members:["s1","s2","s3"], floors:[8,9,10]},
+  {id:"t4", members:["s4"], floors:[7]},
+  {id:"t5", members:["s7","s10"], floors:[5,6]},
+];
+const teamById = id => TEAMS.find(x=>x.id===id);
+const teamOf = sid => TEAMS.find(x=>x.members.includes(sid));
+const teamName = tm => tm ? (tm.members.length ? tm.members.map(id=>firstName(staffById(id))).join(" + ") : t("new_team")+" "+tm.id.slice(1)) : t("unassigned");
+const TYPES = ["Club Sota Queen","Club Sota Twin","Sota Suite","Sota Family"];
+const SURN = ["K","P","L","C","J","S","M","I","T","N","H","Y"];
+
+const PH_KIND = ["bed","bath","desk"];
+function samplePhoto(kind, seed){
+  const hues = {bed:[34,22],bath:[196,210],desk:[150,40]}[kind]; const h1=hues[0], h2=hues[1];
+  const shapes = kind==="bed"
+    ? `<rect x="18" y="44" width="124" height="40" rx="6" fill="hsl(${h1} 25% 92%)"/><rect x="18" y="34" width="124" height="16" rx="5" fill="hsl(${h1} 30% 80%)"/><rect x="28" y="38" width="40" height="14" rx="6" fill="#fff"/><rect x="92" y="38" width="40" height="14" rx="6" fill="#fff"/>`
+    : kind==="bath"
+    ? `<rect x="30" y="26" width="100" height="58" rx="10" fill="hsl(${h1} 20% 95%)"/><ellipse cx="80" cy="56" rx="34" ry="18" fill="hsl(${h1} 40% 82%)"/><rect x="74" y="14" width="12" height="14" rx="3" fill="hsl(${h1} 10% 70%)"/>`
+    : `<rect x="34" y="40" width="20" height="44" rx="5" fill="hsl(${h1} 35% 70%)"/><rect x="62" y="30" width="22" height="54" rx="5" fill="hsl(${h2} 50% 75%)"/><rect x="92" y="48" width="34" height="36" rx="4" fill="#fff"/>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${h1} 22% ${30+seed%10}%)"/><stop offset="1" stop-color="hsl(${h2} 25% 18%)"/></linearGradient></defs><rect width="160" height="120" fill="url(#g)"/><rect y="84" width="160" height="36" fill="hsl(${h1} 15% 24%)"/>${shapes}</svg>`;
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+
+const rooms = [];
+for(let f=5; f<=14; f++){
+  for(let i=1;i<=10;i++){
+    const no = f*100+i, x = R();
+    let st = x<.28?"OC": x<.42?"OD": x<.66?"VD": x<.78?"VC": x<.98?"INS":"OOO";
+    if([1403,1405,1406,1407].includes(no)) st = "VD";
+    const owner = TEAMS.find(tm=>tm.floors.includes(f));
+    const r = { no, floor:f, type: i>=9?3: i>=7?2: i%2?0:1, st, team:null, flags:{}, credit:[],
+      guest: SURN[Math.floor(R()*SURN.length)]+"*** "+String.fromCharCode(65+Math.floor(R()*26))+".",
+      co:"11:00", arrAt:null, photos:[], log:[] };
+    if(["VD","VC","INS"].includes(st) && R()<.75) r.flags.dep = true;
+    if(["OC","OD"].includes(st) && R()<.45){ r.flags.dep = true; if(R()<.25){ r.flags.late=true; r.co = R()<.5?"13:00":"14:00"; } }
+    if(["VD","VC","INS"].includes(st) && R()<.4) r.arrAt = ["14:00","15:00","15:00","16:00"][Math.floor(R()*4)];
+    if(no===1406){ r.arrAt="15:00"; r.flags.vip=true; r.flags.dep=true; }
+    if(R()<.04) r.flags.vip = true;
+    if(st!=="OOO") r.team = (st==="VD" && R()<.25 && f!==14) ? null : owner.id;
+    if(["VC","INS"].includes(st)){
+      r.credit = owner.members.slice();
+      if(R()<.8){ const tm = "10:"+String(10+Math.floor(R()*45)).padStart(2,"0"); r.photos = PH_KIND.map((k,ix)=>({src:samplePhoto(k,no+ix), who:staffById(owner.members[ix%owner.members.length]), t:tm, sample:true})); }
+    }
+    if(r.st==="INS" && r.arrAt) r.st = "ARR";
+    r.log.push({t:"07:02", k:"log_open"});
+    if(r.flags.dep && !["OC","OD"].includes(st)) r.log.push({t:"10:0"+Math.floor(R()*9), k:"log_out"});
+    if(r.photos.length) r.log.push({t:r.photos[0].t, k:"log_finish", who:teamName(owner)});
+    rooms.push(r);
+  }
+}
+const LOGTXT = { log_open:["근무 시작, 상태 동기화","Начало смены, синхронизация","Shift start, status synced","Smena boshlandi, holatlar sinxronlandi"], log_out:["게스트 체크아웃","Гость выехал","Guest checked out","Mehmon chiqdi"],
+  log_finish:["청소 완료 · 사진·체크리스트","Убран · фото и чек-лист","Cleaned · photos and checklist","Tozalandi · rasmlar va nazorat roʻyxati"], log_inspect:["점검 완료","Проверен","Inspected","Tekshirildi"],
+  log_dirty:["재청소 요청","Возвращён на уборку","Sent back for cleaning","Qayta tozalashga qaytarildi"], log_ooo:["사용 불가 처리","Снят с продажи","Set out of order","Sotuvdan olish"], log_back:["판매 재개","Возвращён в продажу","Back in service","Sotuvga qaytarish"],
+  log_assign:["팀 배정","Назначена команда","Team assigned","Jamoa biriktirildi"], log_lost:["분실물 등록","Зарегистрирована находка","Lost item registered","Topilma roʻyxatga olindi"] };
+
+/* stock: three stores only — 29F chemicals, 28F cups & appliances, 14F guest consumables (linen is the laundry's, not tracked here) */
+const ITEMS = [
+  {id:"sp",cat:"amen",at:14,n:["샴푸·바디워시","Шампунь и гель","Shampoo & body wash","Shampun va gel"],u:["개","шт","pcs","dona"],par:60},
+  {id:"tb",cat:"amen",at:14,n:["칫솔 세트","Зубной набор","Toothbrush kit","Tish choʻtkasi toʻplami"],u:["개","шт","pcs","dona"],par:40},
+  {id:"sl",cat:"amen",at:14,n:["슬리퍼","Тапочки","Slippers","Shippak"],u:["켤레","пар","pairs","juft"],par:30},
+  {id:"tp",cat:"amen",at:14,n:["화장지","Туалетная бумага","Toilet roll","Hojatxona qogʻozi"],u:["롤","рул.","rolls","rulon"],par:40},
+  {id:"ct",cat:"amen",at:14,n:["커피·차 스틱","Кофе и чай (пакетики)","Coffee & tea sachets","Qahva va choy paketlari"],u:["개","шт","pcs","dona"],par:80},
+  {id:"wa",cat:"fridge",at:14,n:["생수 500ml","Вода 0,5 л","Water 500 ml","Suv 500 ml"],u:["병","бут.","btl","shisha"],par:48},
+  {id:"gc",cat:"chem",at:29,n:["유리 세정제","Стеклоочиститель","Glass cleaner","Oyna tozalagich"],u:["병","бут.","btl","shisha"],par:30},
+  {id:"bl",cat:"chem",at:29,n:["락스","Хлорка","Bleach","Oqartirgich"],u:["통","кан.","jugs","idish"],par:20},
+  {id:"mc",cat:"chem",at:29,n:["다목적 세정제","Универсальное средство","Multi-surface cleaner","Universal tozalagich"],u:["병","бут.","btl","shisha"],par:30},
+  {id:"tbr",cat:"chem",at:29,n:["변기 솔","Ёршик для унитаза","Toilet brush","Unitaz choʻtkasi"],u:["개","шт","pcs","dona"],par:25},
+  {id:"sb",cat:"chem",at:29,n:["청소 솔","Щётка","Scrub brush","Qattiq choʻtka"],u:["개","шт","pcs","dona"],par:25},
+  {id:"rg",cat:"chem",at:29,n:["걸레·극세사 천","Тряпки (микрофибра)","Rags (microfiber)","Latta (mikrofibra)"],u:["장","шт","pcs","dona"],par:200},
+  {id:"gl",cat:"chem",at:29,n:["고무장갑","Резиновые перчатки","Rubber gloves","Rezina qoʻlqop"],u:["켤레","пар","pairs","juft"],par:60},
+  {id:"mg",cat:"equip",at:28,n:["머그컵","Кружки","Mugs","Krujkalar"],u:["개","шт","pcs","dona"],par:120},
+  {id:"kt",cat:"equip",at:28,n:["전기 포트","Чайники","Electric kettles","Elektr choynaklar"],u:["대","шт","pcs","dona"],par:20},
+  {id:"hd",cat:"equip",at:28,n:["헤어드라이어","Фены","Hair dryers","Fenlar"],u:["대","шт","pcs","dona"],par:20},
+  {id:"dr",cat:"equip",at:28,n:["빨래 건조대","Сушилки для белья","Drying racks","Quritgichlar"],u:["개","шт","pcs","dona"],par:15},
+  {id:"wg",cat:"equip",at:28,n:["유리컵","Стаканы","Glasses","Stakanlar"],u:["개","шт","pcs","dona"],par:150},
+];
+/* unit cost in KRW (sample) */
+const PRICE = {bt:4500,ft:1800,sh:9000,dv:12000,pc:2500,sp:350,tb:300,sl:600,tp:450,ct:120,wa:250,gc:3500,bl:2800,mc:4200,tbr:3000,sb:2500,rg:900,gl:1500,mg:3000,kt:25000,hd:30000,dr:12000,wg:1500};
+const STORES = [29,28,14];
+const LOCS = STORES;
+const itemsAt = loc => ITEMS.filter(it => it.at===loc);
+const STOCK = {};
+const RS = rng(91);
+LOCS.forEach(loc=>{ STOCK[loc] = {}; itemsAt(loc).forEach(it=>{
+  let k = .55+RS()*.7;
+  if(it.id==="tp"||it.id==="tb") k = .2;
+  if(it.id==="bl" || it.id==="hd") k = .3;
+  STOCK[loc][it.id] = Math.round(it.par*k);
+}); });
+const lvl = (q,par) => q < par*.35 ? "critical" : q < par*.7 ? "low" : "ok";
+const LVC = {critical:"var(--danger)",low:"var(--warn)",ok:"var(--ok)"};
+const locKind = loc => loc===29 ? t("store_29") : loc===28 ? t("store_28") : t("store_14");
+const lowCount = loc => itemsAt(loc).filter(it=>lvl(STOCK[loc][it.id],it.par)!=="ok").length;
+const fillPct = loc => { const its = itemsAt(loc); return Math.round(its.reduce((a,it)=>a+Math.min(1,STOCK[loc][it.id]/it.par),0)/its.length*100); };
+
+/* schedule: week of 26 Oct – 1 Nov, day index 2 = today (Wed) */
+/* month schedule: Oct 2026 (current, today = 28) and Nov 2026 (next, already drafted) */
+const WD = [["일","월","화","수","목","금","토"],["Вс","Пн","Вт","Ср","Чт","Пт","Сб"],["Su","Mo","Tu","We","Th","Fr","Sa"],["Ya","Du","Se","Ch","Pa","Ju","Sh"]];
+const MONTHS = [
+  {n:31, wd0:4, name:["2026년 10월","Октябрь 2026","October 2026","Oktyabr 2026"], sh:["10월","окт.","Oct","okt"]},
+  {n:30, wd0:0, name:["2026년 11월","Ноябрь 2026","November 2026","Noyabr 2026"], sh:["11월","нояб.","Nov","noy"]},
+];
+const TODAY = 27; /* index in MONTHS[0] */
+const wdOf = (mi,d) => (MONTHS[mi].wd0 + d) % 7;
+const dayLabel = (mi,d) => lang==="ko" ? `${MONTHS[mi].sh[0]} ${d+1}일` : lang==="en" ? `${MONTHS[mi].sh[2]} ${d+1}` : `${d+1} ${MONTHS[mi].sh[L[lang]]}`;
+const RW = rng(55);
+const fill52 = (mi, ix) => Array.from({length:MONTHS[mi].n},(_,d)=>{ const w = (d + ix*2 + mi*3) % 7; return {w: w!==0 && w!==3, ot:0}; });
+const SCHEDS = [{},{}];
+STAFF.forEach((s,ix)=>{ SCHEDS[0][s.id] = fill52(0,ix); SCHEDS[1][s.id] = fill52(1,ix); });
+const SCHED = SCHEDS[0];
+/* issue log, Oct 1 – today: who took what */
+const RATE = {sp:2.1,tb:.7,sl:.55,tp:.8,ct:3,wa:2,rg:.45,gl:.12,mc:.05,gc:.05,bl:.03};
+const TEAM_K = {t1:1, t2:.95, t3:1.02, t4:.9, t5:1.27};
+const ISSUES = [];
+const DONE = {};
+{ const RI = rng(17); const by = ["u2","u2"];
+  for(let d=0; d<=TODAY; d++){ TEAMS.forEach(tm=>{
+    const n = Math.round((tm.members.length*5.5) * (.8 + RI()*.4) * (d===TODAY ? .45 : 1));
+    DONE[tm.id] = (DONE[tm.id]||0) + n;
+    Object.keys(RATE).forEach(id=>{ const q = Math.round(n*RATE[id]*TEAM_K[tm.id]*(.8+RI()*.4)); if(q>0){
+      const hh = 8 + Math.floor(RI()*3), mm = Math.floor(RI()*60);
+      ISSUES.push({d, tm:tm.id, it:id, q, by: by[RI()<.8?0:1], tm_:`${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`}); } });
+  }); }
+  for(let d=0; d<=TODAY; d++){ const n = d===TODAY ? 2 : 1+Math.floor(RI()*3); for(let i=0;i<n;i++){
+    const id = ["wa","ct","sl","tb","tp","mg"][Math.floor(RI()*6)], hh = 7+Math.floor(RI()*(d===TODAY?4:12)), mm = Math.floor(RI()*60);
+    ISSUES.push({d, tm:"rc", it:id, q:1+Math.floor(RI()*(id==="mg"?2:6)), by:RI()<.6?"u1":"u0", tm_:`${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`}); } }
+  ISSUES.sort((a,b)=> a.d-b.d || a.tm_.localeCompare(b.tm_));
+}
+const won = n => Math.round(n).toLocaleString(lang==="ko"?"ko-KR":lang==="ru"?"ru-RU":"en-US") + " " + t("u_pcs");
+const issueCost = x => x.q;
+const teamSpend = id => ISSUES.filter(x=>x.tm===id).reduce((a,x)=>a+issueCost(x),0);
+const itemById = id => ITEMS.find(x=>x.id===id);
+const dayLbl = d => d===TODAY ? t("today_lbl") : dayLabel(0,d);
+SCHED.s11[TODAY].w = false; SCHED.s8[TODAY].w = true; SCHED.s9[TODAY].w = true;
+TEAMS.forEach(tm=>tm.members.forEach(id=>{ SCHED[id][TODAY].w = true; }));
+STAFF.forEach(s=>{ for(let d=0; d<TODAY; d++){ if(SCHED[s.id][d].w && RW()<.12) SCHED[s.id][d].ot = 1+Math.floor(RW()*2); } });
+
+const WHERE = [["29층 하우스키핑 사무실","Офис хаускипинга, 29 этаж","Housekeeping office, 29F","Xaus-kiping ofisi, 29-qavat"],["프론트 금고","Сейф на ресепшн","Front desk safe","Resepshn seyfi"],["14층 창고","Склад, 14 этаж","14F store","14-qavat ombori"]];
+const LOST = [
+  {d:"10/28 10:05", room:1407, item:["무선 이어폰","Беспроводные наушники","Wireless earbuds","Simsiz quloqchin"], desc:["흰색, 충전 케이스 포함","Белые, с кейсом","White, with charging case","Oq, quvvatlash qutisi bilan"], where:0, by:"s9", st:"stored"},
+  {d:"10/26 13:40", room:902, item:["휴대폰 충전기","Зарядка для телефона","Phone charger","Telefon quvvatlagichi"], desc:["USB-C, 검정","USB-C, чёрная","USB-C, black","USB-C, qora"], where:0, by:"s2", st:"stored"},
+  {d:"10/24 11:15", room:1205, item:["여권 지갑","Обложка для паспорта","Passport wallet","Pasport gʻilofi"], desc:["갈색 가죽, 여권 포함","Коричневая, паспорт внутри","Brown leather, passport inside","Jigarrang charm, ichida pasport"], where:1, by:"s6", st:"returned"},
+  {d:"10/19 12:02", room:610, item:["선글라스","Солнцезащитные очки","Sunglasses","Quyosh koʻzoynagi"], desc:["검정 뿔테","Чёрная оправа","Black frame","Qora gardish"], where:0, by:"s7", st:"stored"},
+  {d:"09/27 10:30", room:803, item:["우산","Зонт","Umbrella","Soyabon"], desc:["투명 장우산","Прозрачный, длинный","Clear, full-size","Shaffof, katta"], where:2, by:"s3", st:"disposed"},
+];
+const CHANS = [["all","ch_all"],["front","ch_front"],["team","ch_team"]];
+const MSGS = {
+  all:[
+    {who:SUP,t:"09:02",lang:"ko",text:{ko:"#1403, #1405 체크아웃 완료. 청소 부탁드려요.",ru:"#1403 и #1405 выехали. Пожалуйста, уберите.",en:"#1403 and #1405 checked out. Please clean them.", uz:"#1403 va #1405 chiqdi. Iltimos, tozalang."}},
+    {who:staffById("s5"),t:"09:10",lang:"ru",text:{ko:"11층 시작합니다.",ru:"Начинаю 11 этаж.",en:"Starting floor 11.", uz:"11-qavatni boshlayapman."}},
+    {who:ADM,t:"09:31",lang:"ko",text:{ko:"VIP 고객 #1406 15시 입실 예정, 우선 청소해주세요.",ru:"VIP-гость в #1406 заезжает в 15:00, уберите в первую очередь.",en:"VIP guest checking in to #1406 at 15:00, please clean it first.", uz:"#1406 ga soat 15:00 da VIP mehmon kiradi, birinchi navbatda tozalang."}},
+    {who:staffById("s9"),t:"10:05",lang:"ru",text:{ko:"#1407에 이어폰을 두고 갔어요. 분실물로 등록했습니다.",ru:"В #1407 оставили наушники, оформила в находки.",en:"Earbuds left in #1407, registered them in lost & found.", uz:"#1407 da quloqchin qolibdi, topilmalarga qayd qildim."}},
+    {who:SUP,t:"10:12",lang:"ko",text:{ko:"확인했습니다. 감사합니다!",ru:"Принято, спасибо!",en:"Got it, thanks!", uz:"Qabul qildim, rahmat!"}},
+  ],
+  front:[
+    {who:SUP,t:"08:50",lang:"ko",text:{ko:"#1006 레이트 체크아웃 14시까지 연장됐습니다.",ru:"#1006: поздний выезд продлён до 14:00.",en:"#1006 late check-out extended to 14:00.", uz:"#1006 kech chiqish 14:00 gacha uzaytirildi."}},
+    {who:ADM,t:"09:40",lang:"ko",text:{ko:"#1203 고객님이 수건 2장 추가 요청하셨어요.",ru:"Гость в #1203 просит ещё 2 полотенца.",en:"Guest in #1203 asked for 2 extra towels.", uz:"#1203 dagi mehmon yana 2 ta sochiq soʻradi."}},
+  ],
+  team:[
+    {who:staffById("s9"),t:"08:15",lang:"ru",text:{ko:"나는 #1401부터 할게, 너는 13층 시작해.",ru:"Я начну с #1401, а ты начинай 13 этаж.",en:"I'll start with #1401, you start floor 13.", uz:"Men #1401 dan boshlayman, sen 13-qavatdan boshla."}},
+    {who:staffById("s8"),t:"08:16",lang:"ru",text:{ko:"좋아. 화장지는 하우스키퍼에게 받아올게.",ru:"Ок. Туалетную бумагу возьму у хаускипера.",en:"OK. I'll get toilet rolls from the housekeeper.", uz:"Xoʻp. Hojatxona qogʻozini xauskiperdan olaman."}},
+  ],
+};
+const USERS = [
+  {u:ADM, role:"admin", login:"admin.nam", last:"08:41"},
+  {u:SUP, role:"sup", login:"front.bong", last:"06:58"},
+  {u:HK, role:"hk", login:"store.kirill", last:"07:40"},
+  ...STAFF.map((s,i)=>({u:s, role:"att", login:"hk."+s.n[2].split(" ").slice(-1)[0].toLowerCase(), last: s.id==="s11" ? "10/27" : "07:"+String(i).padStart(2,"0")})),
+];
+const PERMS = { rooms:{admin:1,sup:1,att:1,hk:0}, inspect:{admin:1,sup:1,att:0,hk:0}, assign:{admin:1,sup:1,att:0,hk:0}, sched:{admin:1,sup:1,att:0,hk:0}, issue:{admin:1,sup:0,att:0,hk:1}, stock_edit:{admin:1,sup:0,att:0,hk:1}, acc:{admin:1,sup:0,att:0,hk:0} };
+
+/* ================= state ================= */
+const S = { role:null, view:"home", me:"s8", homeF:"todo", filter:"all", q:"", open:null, finish:null, finPhotos:[], finChecks:{},
+  assign:false, picked:new Set(), stockMode:"loc", issTeam:"all", stockLoc:14, stockCat:"all", chan:"all", tr:true, otDay:27, otH:1, otWho:"t1", mon:0, delArm:null, tempPw:null, toast:"" }; window.__S=S; setTimeout(()=>{window.__render=render;});
+try{ const sl = localStorage.getItem("ss-lang"); if(sl && L[sl]!==undefined) lang = sl; }catch(e){}
+try{ const th = localStorage.getItem("ss-theme"); if(th) document.documentElement.setAttribute("data-theme", th); }catch(e){}
+const NOW = "11:20", NOW_MIN = 680;
+const toMin = s => { const [h,m]=s.split(":").map(Number); return h*60+m; };
+const STATUSES = ["VD","OD","VC","INS","ARR","OC","OOO"];
+const CHECKS = ["towel","water","tea","wash","micro","ac"];
+const scolor = st => "var(--s-"+st.toLowerCase()+")";
+const count = st => rooms.filter(r=>r.st===st).length;
+const stLabel = r => r.st==="ARR" ? t("st_ARR",{t:r.arrAt}) : t("st_"+r.st);
+const needsClean = r => r.st==="VD" || (r.st==="OD" && !r.flags.dep);
+const meObj = () => S.role==="att" ? staffById(S.me) : S.role==="sup" ? SUP : S.role==="hk" ? HK : ADM;
+const whoAmI = () => sName(meObj());
+const can = p => !!PERMS[p][S.role];
+const myTeam = () => teamOf(S.me);
+
+/* ================= icons ================= */
+const svg = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const I = {
+  home: svg('<rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="15" cy="12" r="1"/>'),
+  board: svg('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'),
+  co: svg('<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/>'),
+  sched: svg('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h2M14 14h2M8 17h2"/>'),
+  stock: svg('<path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/>'),
+  staff: svg('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.6c1.9.7 3.1 2.5 3.5 5.4"/>'),
+  lost: svg('<path d="M4 9h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M8 9V7a4 4 0 0 1 8 0v2"/><path d="M10.5 13.2a1.6 1.6 0 1 1 2.2 1.5c-.5.2-.7.6-.7 1.1M12 18.3v.01"/>'),
+  chat: svg('<path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8M8 13h5"/>'),
+  admin: svg('<path d="M12 3l7 3v5c0 4.6-3 8.3-7 10-4-1.7-7-5.4-7-10V6z"/><path d="M9 12l2 2 4-4"/>'),
+  dash: svg('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'),
+  camera: svg('<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'),
+  images: svg('<rect x="3" y="5" width="14" height="12" rx="2"/><path d="M7 21h12a2 2 0 0 0 2-2V9"/><path d="m3 14 4-4 4 4 2-2 4 4"/>'),
+  moon: svg('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>'),
+  out: svg('<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 16l4-4-4-4M19 12H9"/>'),
+  x: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
+  lock: svg('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
+  broom: svg('<path d="M19 3 11 11"/><path d="M11 11c-3 0-6 2-7 6l-1 4 4-1c4-1 6-4 6-7z"/>'),
+  desk: svg('<path d="M3 10h18M5 10v10M19 10v10"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/>'),
+  team: svg('<circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2.5 19c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5M10.5 19c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5"/>'),
+};
+
+/* ================= render ================= */
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const brand = lg => BRAND.logo ? `<img class="logo ${lg?"lg":""}" src="${BRAND.logo}" alt="${BRAND.name}">` : `<span class="wm ${lg?"lg":""}"><span class="wm-name">${BRAND.name}</span><span class="wm-sub">${BRAND.sub}</span></span>`;
+const langSwitch = () => `<div class="langs" role="group" aria-label="Language">${[["ko","한국어"],["ru","Рус"],["uz","Oʻzb"],["en","Eng"]].map(([k,l])=>`<button data-act="lang" data-v="${k}" aria-pressed="${lang===k}">${l}</button>`).join("")}</div><select class="input lang-sel" id="lang-sel" data-act="langsel" aria-label="Language">${[["ko","KO"],["ru","RU"],["uz","UZ"],["en","EN"]].map(([k,l])=>`<option value="${k}" ${lang===k?"selected":""}>${l}</option>`).join("")}</select>`;
+function navFor(role){
+  if(role==="att") return ["home","sched","lost","chat"];
+  if(role==="hk") return ["dash","stock","chat"];
+  if(role==="sup") return ["dash","board","co","staff","sched","stock","lost","chat"];
+  return ["dash","board","co","staff","sched","stock","lost","chat","admin"];
+}
+const NAV = {dash:"nav_dash",home:"nav_home",board:"nav_board",co:"nav_co",staff:"nav_staff",sched:"nav_sched",stock:"nav_stock",lost:"nav_lost",chat:"nav_chat",admin:"nav_admin"};
+const faces = ids => `<span class="faces">${ids.map(id=>{ const s=staffById(id); return s?`<span class="avatar sm" title="${esc(sName(s))}">${initials(s)}</span>`:""; }).join("")}</span>`;
+
+function render(){
+  document.documentElement.lang = lang;
+  if(!S.role){ app.innerHTML = loginView(); startArt(); return; }
+  stopArt();
+  const me = meObj();
+  const counts = { board: rooms.filter(r=>!r.team && needsClean(r)).length, co: rooms.filter(r=>r.flags.dep&&(r.st==="OC"||r.st==="OD")).length, stock: LOCS.reduce((a,l)=>a+lowCount(l),0), lost: LOST.filter(x=>x.st==="stored").length };
+  app.innerHTML = `
+  <div class="shell">
+    <aside class="rail">
+      <div class="brand">${brand(false)}</div>
+      <nav aria-label="Main">${navFor(S.role).map(v=>`<button class="nav-btn" data-act="go" data-v="${v}" ${S.view===v?'aria-current="page"':""}>${I[v]}<span>${t(NAV[v])}</span>${counts[v]&&S.role!=="att"?`<span class="count">${counts[v]}</span>`:""}</button>`).join("")}</nav>
+      <div class="rail-foot">
+        <div class="me-card"><span class="avatar">${initials(me)}</span><div><b>${esc(sName(me))}</b><span>${t("role_"+S.role)}</span></div></div>
+        <button class="btn btn-ghost btn-sm" data-act="logout">${I.out}${t("logout")}</button>
+      </div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <div class="brand">${brand(false)}</div>
+        <span class="concept">${t("concept")}</span>
+        <span class="spacer"></span>
+        ${langSwitch()}
+        <button class="icon-btn" data-act="theme" aria-label="${t("theme")}" title="${t("theme")}">${I.moon}</button>
+        <button class="icon-btn" data-act="logout" aria-label="${t("logout")}" title="${t("logout")}">${I.out}</button>
+      </header>
+      <main class="content">${views[S.view]()}</main>
+    </div>
+  </div>
+  ${S.sheet ? stockSheet() : S.finish ? finishSheet(rooms.find(r=>r.no===S.finish)) : S.open ? roomSheet(rooms.find(r=>r.no===S.open)) : ""}
+  ${S.toast ? `<div class="toast" role="status">${esc(S.toast)}</div>` : ""}`;
+  const ml = document.querySelector(".msgs"); if(ml) ml.scrollTop = ml.scrollHeight;
+  const sw = document.querySelector(".msched") && document.querySelector(".msched").parentElement;
+  if(sw){ if(S.schedX != null) sw.scrollLeft = S.schedX; else { const tc = sw.querySelector("th.tcol"); if(tc && sw.clientWidth < 900 && sw.scrollWidth > sw.clientWidth) sw.scrollLeft = tc.offsetLeft - sw.clientWidth/2; }
+    sw.addEventListener("scroll", ()=>{ S.schedX = sw.scrollLeft; }, {passive:true}); }
+}
+
+function loginView(){
+  const roleIco = {att:I.broom, hk:I.stock, sup:I.desk, admin:I.admin};
+  return `<div class="login">
+    <section class="login-art">
+      <canvas id="art" aria-hidden="true"></canvas>
+      ${brand(true)}
+      <h1 class="claim">${t("claim")}</h1>
+      <p class="muted small">${t("login_foot")}</p>
+    </section>
+    <section class="login-form">
+      <form class="login-card" data-form="login">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <h2 style="font-family:var(--f-display);font-weight:600;font-size:24px">${t("login_title")}</h2>${langSwitch()}
+        </div>
+        <div class="field"><label for="lg-id">${t("id")}</label><input class="input" id="lg-id" autocomplete="off" value="hk.dilnoza"></div>
+        <div class="field"><label for="lg-pw">${t("pw")}</label><input class="input" id="lg-pw" type="password" autocomplete="off" value="demo1234"></div>
+        <button class="btn btn-primary btn-block" type="submit">${t("signin")}</button>
+        <div class="note">${I.lock}<span>${t("no_signup")}</span></div>
+        <div class="divider">${t("demo_as")}</div>
+        <div class="roles">${["att","hk","sup","admin"].map(r=>`<button type="button" class="role-card" data-act="login" data-v="${r}">${roleIco[r]}<b>${t("role_"+r)}</b></button>`).join("")}</div>
+      </form>
+    </section>
+  </div>`;
+}
+
+const views = {};
+function marks(r){
+  const m = [];
+  if((r.st==="OC"||r.st==="OD") && r.flags.dep) m.push(`<span class="mark out">${t("out_at",{t:r.co})}${r.flags.late?" · "+t("late"):""}</span>`);
+  if(r.arrAt && r.st!=="ARR") m.push(`<span class="mark in">${t("in_at",{t:r.arrAt})}</span>`);
+  if(r.flags.vip) m.push('<span class="mark vip">VIP</span>');
+  return m.join("");
+}
+function prio(a,b){ return needsClean(b)-needsClean(a) || (b.flags.vip?1:0)-(a.flags.vip?1:0) || (b.arrAt?1:0)-(a.arrAt?1:0) || (a.arrAt||"99").localeCompare(b.arrAt||"99") || a.no-b.no; }
+
+/* ---------- housekeeper: home = the team's room list ---------- */
+views.home = function(){
+  const me = staffById(S.me), tm = myTeam();
+  const mine = tm ? rooms.filter(r=>r.team===tm.id) : [];
+  const todo = mine.filter(needsClean);
+  const done = mine.filter(r=>["VC","INS","ARR"].includes(r.st) || (r.st==="OC" && r.credit.length)).length;
+  const pct = mine.length ? Math.round((mine.length-todo.length)/mine.length*100) : 100;
+  const hr = new Date().getHours(); const hk = hr<12 ? "hello_m" : hr<18 ? "hello_d" : "hello_e";
+  const list = (S.homeF==="todo" ? todo : mine).slice().sort(prio);
+  return `
+  <div class="hello"><p class="eyebrow">${t("today")}</p><h1>${t(hk)} <b>${esc(sName(me))}</b></h1></div>
+  <section class="today">
+    <div class="ring" style="--p:${pct}"><span>${pct}%</span></div>
+    <div class="grow"><b style="font-size:18px;font-weight:500">${t("rooms_left_n",{n:todo.length})}</b>
+      <div class="muted small">${t("done_by_team",{n:done})}</div></div>
+    ${tm?`<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><span class="eyebrow">${t("team_with")}</span><span style="display:flex;gap:8px;align-items:center">${faces(tm.members)}<span class="small">${esc(teamName(tm))}</span></span></div>`:""}
+  </section>
+  <p class="muted small" style="margin-top:-8px">${t("team_credit")}</p>
+  <div class="chips"><button class="chip" data-act="homef" data-v="todo" aria-pressed="${S.homeF==="todo"}">${t("f_todo")} · ${todo.length}</button><button class="chip" data-act="homef" data-v="all" aria-pressed="${S.homeF==="all"}">${t("f_mine_all")} · ${mine.length}</button></div>
+  <div class="list">${list.length ? list.map(r=>`<div class="rrow ${needsClean(r)?"":"done"}" style="--c:${scolor(r.st)}">
+      <button class="linkish" style="text-decoration:none;color:var(--fg)" data-act="room" data-v="${r.no}"><span class="no">${r.no}</span></button>
+      <div class="info"><span class="st" style="--c:${scolor(r.st)}">${stLabel(r)}</span><div class="row">${marks(r)}<span class="muted" style="font-size:12px">${TYPES[r.type]}</span></div></div>
+      ${needsClean(r)?`<button class="btn btn-primary btn-sm" data-act="finish" data-v="${r.no}">${I.camera}${t("act_finish")}</button>`:""}
+    </div>`).join("") : `<div class="today">${t("all_done")}</div>`}</div>`;
+};
+
+/* ---------- finish: photos + checklist, both required ---------- */
+function finishSheet(r){
+  const c = CHECKS.filter(k=>S.finChecks[k]).length;
+  const ready = c===CHECKS.length && S.finPhotos.length>0;
+  return `<div class="scrim" data-act="closefin"></div>
+  <aside class="sheet" role="dialog" aria-modal="true" aria-label="${t("fin_title")} ${r.no}">
+    <div class="sheet-head"><div style="flex:1"><p class="eyebrow">${t("fin_title")}</p><span class="big">${r.no}</span></div><button class="icon-btn" data-act="closefin" aria-label="${t("close")}">${I.x}</button></div>
+    <div class="sheet-body">
+      <div><div class="sec-t">${t("fin_photos")}</div>
+        <div class="shoot">
+          <label class="btn" for="cam-in">${I.camera}${t("camera")}</label><input class="vh" type="file" accept="image/*" capture="environment" id="cam-in" data-photo="1">
+          <label class="btn" for="gal-in">${I.images}${t("gallery")}</label><input class="vh" type="file" accept="image/*" multiple id="gal-in" data-photo="1">
+        </div>
+        ${S.finPhotos.length?`<div class="photos" style="margin-top:10px">${S.finPhotos.map((p,i)=>`<figure class="ph" style="background-image:url('${p}')"><button class="rm" data-act="rmphoto" data-v="${i}" aria-label="${t("close")}">×</button></figure>`).join("")}</div>`:""}
+        <button class="linkish small" style="margin-top:8px" data-act="demophoto">${t("demo_photo")}</button>
+      </div>
+      <div><div class="sec-t">${t("fin_check")}</div>
+        <div class="checks">${CHECKS.map(k=>`<button class="check" data-act="fincheck" data-v="${k}" aria-pressed="${!!S.finChecks[k]}"><i>${S.finChecks[k]?"✓":""}</i>${t("ck_"+k)}</button>`).join("")}</div>
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn btn-clean btn-block" data-act="findone" data-v="${r.no}" ${ready?"":"disabled"}>${t("fin_done")}</button>
+      ${ready?"":`<span class="need">${t("fin_need",{c})}</span>`}
+    </div>
+  </aside>`;
+}
+
+/* ---------- room sheet ---------- */
+function roomSheet(r){
+  if(!r) return "";
+  const tm = teamById(r.team);
+  const acts = [];
+  if((r.st==="OC"||r.st==="OD") && r.flags.dep && S.role!=="att") acts.push(["checkout","",t("act_co"),true]);
+  if(needsClean(r) && (S.role==="att" ? tm && tm.members.includes(S.me) : true)) acts.push(["finish",r.no,t("act_finish"),true]);
+  if(r.st==="VC" && can("inspect")) acts.push(["setst","INS",t("act_inspect"),true]);
+  if(["VC","INS","ARR"].includes(r.st) && can("inspect")) acts.push(["setst","VD",t("act_dirty"),false]);
+  if(r.st==="OOO" && S.role==="admin") acts.push(["setst","VD",t("act_back"),true]);
+  else if(S.role==="admin") acts.push(["setst","OOO",t("act_ooo"),false]);
+  return `<div class="scrim" data-act="close"></div>
+  <aside class="sheet" role="dialog" aria-modal="true" aria-label="${r.no}">
+    <div class="sheet-head"><div style="flex:1;display:flex;flex-direction:column;gap:10px"><span class="big">${r.no}</span><span class="st" style="--c:${scolor(r.st)};font-size:17px">${stLabel(r)}</span><span style="display:flex;gap:6px;flex-wrap:wrap">${marks(r)}</span></div>
+      <button class="icon-btn" data-act="close" aria-label="${t("close")}">${I.x}</button></div>
+    <div class="sheet-body">
+      <div class="facts">
+        <div class="fact"><span>${t("room_type")}</span>${TYPES[r.type]}</div>
+        <div class="fact"><span>${t("team")}</span>${can("assign") ? `<select class="input input-sm" id="rteam-${r.no}" data-act="rteam" data-v="${r.no}" style="width:100%;margin-top:4px"><option value="">${t("no_team")}</option>${TEAMS.filter(x=>x.members.length).map(x=>`<option value="${x.id}" ${r.team===x.id?"selected":""}>${esc(teamName(x))}</option>`).join("")}</select>` : esc(teamName(tm))}</div>
+        <div class="fact"><span>${t("checkout_at")}</span><span class="mono">${r.flags.dep?r.co:"—"}</span></div>
+        <div class="fact"><span>${t("co_next")}</span><span class="mono">${r.arrAt||"—"}</span></div>
+      </div>
+      ${r.credit.length?`<div><div class="sec-t">${t("credited")}</div><span style="display:flex;gap:8px;align-items:center">${faces(r.credit)}<span class="small">${esc(r.credit.map(id=>sName(staffById(id))).join(", "))}</span></span></div>`:""}
+      ${acts.length?`<div><div class="sec-t">${t("status")}</div><div class="actions">${acts.map(([a,v,l,p])=>`<button class="btn ${p?"btn-primary":""}" data-act="${a}" data-v="${v}" data-room="${r.no}">${a==="finish"?I.camera:""}${l}</button>`).join("")}</div></div>`:""}
+      <div><div class="sec-t">${t("photos")}${r.photos.length?` · ${r.photos.length}`:""}</div>
+        ${r.photos.length?`<div class="photos">${r.photos.map(p=>`<figure class="ph" style="background-image:url('${p.src}')"><figcaption>${p.sample?t("sample_photo")+" · ":""}${esc(sName(p.who))} · ${p.t}</figcaption></figure>`).join("")}</div>`:`<p class="muted small">${t("no_photos")}</p>`}
+      </div>
+      <div><div class="sec-t">${t("history")}</div>
+        <div class="timeline">${r.log.slice().reverse().map(e=>`<div><time>${e.t}</time>${LOGTXT[e.k][L[lang]]}${e.who?` · <span class="muted">${esc(e.who)}</span>`:""}</div>`).join("")}</div>
+      </div>
+    </div>
+  </aside>`;
+}
+
+/* ---------- all rooms board (front / admin), with manual assignment ---------- */
+/* ---------- dashboard ---------- */
+function teamSpendPanel(){
+  const rows = TEAMS.filter(x=>x.members.length).map(tm=>({tm, nm:teamName(tm), sp:ISSUES.filter(x=>x.tm===tm.id).reduce((a,x)=>a+x.q,0)}));
+  rows.push({tm:null, nm:t("rc_team"), sp:ISSUES.filter(x=>x.tm==="rc").reduce((a,x)=>a+x.q,0)});
+  const max = Math.max(...rows.map(r=>r.sp))*1.1;
+  return {avg:0, rows, html: rows.map(r=>`<div class="hbar"><span class="nm">${esc(r.nm)}</span><span class="tr"><i style="width:${r.sp/max*100}%;--m:var(--accent)"></i></span><span class="v">${won(r.sp)}</span></div>`).join("")};
+}
+function insightBox(){
+  const {avg, rows} = teamSpendPanel(); const worst = rows.slice().sort((a,b)=>b.pr-a.pr)[0];
+  const p = Math.round((worst.pr/avg-1)*100), save = (worst.pr-avg)*worst.done/(TODAY+.45)*30;
+  return `<div class="insight c12"><span class="ico">!</span><div><b>${t("ins_title",{team:esc(teamName(worst.tm)),p})}</b><p class="muted small" style="margin-top:4px">${t("ins_body")}</p></div></div>`;
+}
+function issueRows(list){
+  return list.map(x=>{ const it = itemById(x.it); return `<tr class="${x.fresh?"new":""}"><td class="mono">${dayLbl(x.d)} ${x.tm_}</td><td>${x.tm==="rc"?`<span class="tag arr">${t("role_sup")}</span>`:esc(teamName(teamById(x.tm)))}</td><td>${it.n[L[lang]]}</td><td class="n">${x.q} ${it.u[L[lang]]}</td><td class="muted">${esc(sName(personById(x.by)))}</td></tr>`; }).join("");
+}
+views.dash = function(){
+  const left = rooms.filter(needsClean).length, onShift = STAFF.filter(s=>SCHED[s.id][TODAY].w).length;
+  const todayIs = ISSUES.filter(x=>x.d===TODAY), todayCost = todayIs.reduce((a,x)=>a+issueCost(x),0);
+  const month = ISSUES.reduce((a,x)=>a+issueCost(x),0);
+  const lowAll = []; LOCS.forEach(l=>itemsAt(l).forEach(it=>{ const q=STOCK[l][it.id], lv=lvl(q,it.par); if(lv!=="ok") lowAll.push({l,it,q,lv}); }));
+  lowAll.sort((a,b)=>a.q/a.it.par-b.q/b.it.par);
+  const st = STATUSES.map(x=>[x,count(x)]).filter(x=>x[1]);
+  const days = [...Array(TODAY+1).keys()].map(d=>ISSUES.filter(x=>x.d===d).reduce((a,x)=>a+issueCost(x),0)); const dmax = Math.max(...days);
+  const tp = teamSpendPanel();
+  return `<div class="page-head"><div><p class="eyebrow">${t("today")} · ${NOW}</p><h1>${t("dash_title")}</h1><p class="muted small" style="margin-top:6px">${t("dash_sub")}</p></div></div>
+  <section class="kpis k4">
+    <div class="kpi" style="--k:${scolor("VD")}"><span>${t("k_rooms_left")}</span><b>${left}</b><small>${t("kpi_insp")}: ${count("VC")}</small></div>
+    <div class="kpi" style="--k:var(--ok)"><span>${t("k_on_shift")}</span><b>${onShift}</b><small>${t("k_teams",{n:TEAMS.filter(x=>x.members.length).length})}</small></div>
+    <div class="kpi" style="--k:var(--accent)"><span>${t("k_month_cost")}</span><b class="money">${won(month)}</b><small>${t("k_issued_today")}: ${won(todayCost)}</small></div>
+    <div class="kpi" style="--k:var(--danger)"><span>${t("k_low")}</span><b>${lowAll.length}</b><small>${t("k_locs",{n:new Set(lowAll.map(x=>x.l)).size})}</small></div>
+  </section>
+  <div class="dash" style="margin-top:16px">
+    
+    <section class="panel c7"><div class="panel-head"><h2>${t("p_team_cost")}</h2><span class="spacer"></span></div><div class="pbody">${tp.html}</div></section>
+    <section class="panel c5"><div class="panel-head"><h2>${t("p_status")}</h2><span class="spacer"></span><span class="muted small">${rooms.length}</span></div><div class="pbody">
+      <div class="stack">${st.map(([x,n])=>`<i style="width:${n/rooms.length*100}%;--m:${scolor(x)}"></i>`).join("")}</div>
+      <div class="slegend">${st.map(([x,n])=>`<span style="--m:${scolor(x)}"><i></i>${x==="ARR"?t("st_ARR0"):t("st_"+x)} <b>${n}</b></span>`).join("")}</div>
+      <h2 style="font-size:14px;font-weight:500;margin-top:6px">${t("p_daily")}</h2>
+      <div class="spark">${days.map((v,d)=>`<i class="${d===TODAY?"t":""}" style="height:${v/dmax*100}%" title="${dayLbl(d)} ${won(v)}"></i>`).join("")}</div>
+    </div></section>
+    <section class="panel c5"><div class="panel-head"><h2>${t("p_low")}</h2><span class="spacer"></span><button class="btn btn-sm btn-ghost" data-act="go" data-v="stock">${t("nav_stock")} →</button></div><div class="lowlist">${lowAll.slice(0,6).map(x=>`<button data-act="stockgo" data-v="${x.l}"><span class="tag ${x.lv==="critical"?"danger":"warn"}">${x.l}F</span><span>${x.it.n[L[lang]]}</span><span class="mono small" style="color:${LVC[x.lv]}">${x.q} / ${x.it.par}</span></button>`).join("")}</div></section>
+    <section class="panel c7"><div class="panel-head"><h2>${t("p_log")}</h2><span class="spacer"></span><button class="btn btn-sm btn-ghost" data-act="issuego">${t("issue_title")} →</button></div><div class="table-wrap"><table class="ilog"><thead><tr><th>${t("when")}</th><th>${t("who_team")}</th><th>${t("item")}</th><th style="text-align:right">${t("qty")}</th><th>${t("issued_by")}</th></tr></thead><tbody>${issueRows(ISSUES.slice(-6).reverse())}</tbody></table></div></section>
+  </div>`;
+};
+
+views.board = function(){
+  const open = rooms.filter(r=>!r.team && needsClean(r)).length;
+  const kp = [["kpi_dep",rooms.filter(r=>r.flags.dep&&(r.st==="OC"||r.st==="OD")).length,"var(--fg)"],["kpi_dirty",count("VD")+count("OD"),scolor("VD")],["kpi_insp",count("VC"),scolor("VC")],["kpi_ready",count("INS")+count("ARR"),scolor("INS")],["kpi_open",open,"var(--accent)"]];
+  const q = S.q.trim();
+  const match = r => (S.filter==="all"||r.st===S.filter||(S.filter==="open"&&!r.team&&needsClean(r))) && (!q || String(r.no).includes(q));
+  const n = S.picked.size;
+  return `
+  <div class="page-head"><div><p class="eyebrow">${t("today")} · ${NOW}</p><h1>${t("nav_board")}</h1></div><span class="spacer"></span>
+    <input class="input" id="room-search" inputmode="numeric" placeholder="${t("search")}" value="${esc(S.q)}" data-input="q" style="max-width:180px">
+    ${can("assign")?`<button class="btn ${S.assign?"":"btn-primary"}" data-act="assignmode">${I.team}${S.assign?t("assign_done"):t("assign_mode")}</button>`:""}</div>
+  <section class="kpis">${kp.map(([l,v,c])=>`<div class="kpi" style="--k:${c}"><span>${t(l)}</span><b>${v}</b></div>`).join("")}</section>
+  <div class="chips" role="group" aria-label="Filter">
+    <button class="chip" data-act="filter" data-v="all" aria-pressed="${S.filter==="all"}">${t("all")} · ${rooms.length}</button>
+    ${STATUSES.map(st=>`<button class="chip" style="--c:${scolor(st)}" data-act="filter" data-v="${st}" aria-pressed="${S.filter===st}"><span class="dot"></span>${st==="ARR"?t("st_ARR0"):t("st_"+st)} · ${count(st)}</button>`).join("")}
+    <button class="chip" data-act="filter" data-v="open" aria-pressed="${S.filter==="open"}">${t("unassigned")} · ${open}</button>
+  </div>
+  ${S.assign?`<p class="muted small">${t("assign_pick")}</p>`:""}
+  <section class="floors">${[14,13,12,11,10,9,8,7,6,5].map(f=>`<div class="floor"><div class="floor-label">${f}F</div><div class="rooms">${rooms.filter(r=>r.floor===f).map(r=>roomTile(r,!match(r))).join("")}</div></div>`).join("")}</section>
+  ${S.assign?`<div class="assign-bar"><b class="mono">${n}</b>
+    <select class="input" id="assign-team" aria-label="${t("team")}">${TEAMS.filter(x=>x.members.length).map(x=>`<option value="${x.id}">${esc(teamName(x))}</option>`).join("")}</select>
+    <button class="btn btn-primary" data-act="doassign" ${n?"":"disabled"}>${t("assign_btn",{n})}</button></div>`:""}`;
+};
+function roomTile(r, dim){
+  const tm = teamById(r.team);
+  const sub = (r.st==="OC"||r.st==="OD") && r.flags.dep ? t("out_at",{t:r.co}) : (r.arrAt && r.st!=="ARR") ? t("in_at",{t:r.arrAt}) : "";
+  return `<button class="room ${dim?"dim":""} ${S.picked.has(r.no)?"picked":""}" style="--c:${scolor(r.st)}" data-act="${S.assign?"pick":"room"}" data-v="${r.no}" aria-label="${r.no} ${esc(stLabel(r))}">
+    ${S.assign?'<span class="tick"></span>':""}
+    <span class="no">${r.no}${r.flags.vip?'<span class="mark vip" style="font-size:9px">VIP</span>':""}</span>
+    <span class="lbl">${stLabel(r)}</span>
+    ${sub?`<span class="sub">${sub}</span>`:""}
+    <span class="who"><span>${tm?esc(teamName(tm)):(needsClean(r)?`<span style="color:var(--accent)">${t("unassigned")}</span>`:"")}</span>${r.photos.length?`<span class="cam">● ${r.photos.length}</span>`:""}</span>
+  </button>`;
+}
+
+/* ---------- checkouts ---------- */
+const stageLabel = r => ["OC","OD"].includes(r.st) ? t("out_at",{t:r.co}) : stLabel(r);
+views.co = function(){
+  const order = {OC:0,OD:0,VD:1,VC:2,INS:3,ARR:3,OOO:4};
+  const list = rooms.filter(r=>r.flags.dep).sort((a,b)=>(b.arrAt?1:0)-(a.arrAt?1:0) || order[a.st]-order[b.st] || a.no-b.no);
+  return `<div class="page-head"><h1>${t("co_title")}</h1><span class="tag gold">${list.filter(r=>r.st==="OC"||r.st==="OD").length} / ${list.length}</span></div>
+  <section class="panel"><div class="table-wrap"><table>
+    <thead><tr><th>${t("room")}</th><th>${t("guest")}</th><th>${t("co_time")}</th><th>${t("status")}</th><th>${t("co_next")}</th><th>${t("team")}</th><th></th></tr></thead>
+    <tbody>${list.map(r=>{ const due = ["OC","OD"].includes(r.st), over = due && toMin(r.co)<NOW_MIN;
+      return `<tr><td><button class="linkish mono" style="font-weight:700;font-size:15px" data-act="room" data-v="${r.no}">${r.no}</button></td>
+        <td class="mono muted">${esc(r.guest)}</td>
+        <td class="mono">${r.co} ${r.flags.late?`<span class="tag warn">${t("late")}</span>`:""}${over?` <span class="tag danger">${t("overdue")}</span>`:""}</td>
+        <td><span class="st" style="--c:${due?"var(--muted)":scolor(r.st)}">${due?(lang==="ru"?"Ожидается выезд":lang==="ko"?"퇴실 전":lang==="uz"?"Chiqish kutilmoqda":"Due out"):stLabel(r)}</span></td>
+        <td>${r.arrAt?`<span class="mono">${r.arrAt}</span> <span class="tag arr">${t("priority")}</span>`:'<span class="muted">—</span>'}</td>
+        <td class="small">${r.team?esc(teamName(teamById(r.team))):`<span style="color:var(--accent)">${t("unassigned")}</span>`}</td>
+        <td>${due?`<button class="btn btn-sm" data-act="checkout" data-room="${r.no}">${t("act_co")}</button>`:r.st==="VC"?`<button class="btn btn-sm" data-act="setst" data-v="INS" data-room="${r.no}">${t("act_inspect")}</button>`:""}</td></tr>`;}).join("")}</tbody>
+  </table></div></section>`;
+};
+
+/* ---------- staff: teams for today ---------- */
+views.staff = function(){
+  const working = STAFF.filter(s=>SCHED[s.id][TODAY].w);
+  return `<div class="page-head"><div><h1>${t("staff_title")}</h1><p class="muted small" style="margin-top:6px">${t("staff_hint")}</p></div><span class="spacer"></span><button class="btn" data-act="newteam">${I.team}${t("new_team")}</button></div>
+  <section class="teams">${TEAMS.map(tm=>{ const rs = rooms.filter(r=>r.team===tm.id), left = rs.filter(needsClean).length, d = rs.length-left;
+    return `<article class="team">
+      <div class="team-top">${faces(tm.members)}<b>${esc(teamName(tm))}</b>${tm.members.length===1?`<span class="tag">${t("solo")}</span>`:""}</div>
+      <div class="stats3"><div><span class="muted">${t("rooms_n")}</span><b>${rs.length}</b></div><div><span class="muted">${t("done")}</span><b>${d}</b></div><div><span class="muted">${t("left")}</span><b>${left}</b></div></div>
+      <div class="meter"><i style="width:${rs.length?d/rs.length*100:0}%;--m:var(--accent)"></i></div>
+      <div class="room-chips">${rs.sort((a,b)=>a.no-b.no).map(r=>`<button style="--c:${scolor(r.st)}" data-act="room" data-v="${r.no}" title="${esc(stLabel(r))}">${r.no}</button>`).join("")}</div>
+    </article>`;}).join("")}</section>
+  <section class="panel"><div class="panel-head"><h2>${t("people")}</h2></div><div class="table-wrap"><table>
+    <thead><tr><th>${t("name")}</th><th>${t("in_team")}</th><th>${t("sched_title")}</th></tr></thead>
+    <tbody>${STAFF.map(s=>{ const tm = teamOf(s.id), w = SCHED[s.id][TODAY].w;
+      return `<tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">${initials(s)}</span>${esc(sName(s))}</div></td>
+        <td>${w?`<select class="input input-sm" id="mteam-${s.id}" data-act="mteam" data-v="${s.id}"><option value="">—</option>${TEAMS.map(x=>`<option value="${x.id}" ${tm&&tm.id===x.id?"selected":""}>${esc(teamName(x))}</option>`).join("")}</select>`:`<span class="muted">${t("off_today")}</span>`}</td>
+        <td><span class="shift ${w?"w":"off"}">${w?t("shift_w"):t("shift_off")}</span></td></tr>`;}).join("")}</tbody>
+  </table></div></section>`;
+};
+
+/* ---------- schedule ---------- */
+views.sched = function(){
+  const edit = can("sched"), mi = S.mon, M = MONTHS[mi], SC = SCHEDS[mi];
+  const tot = id => ({d: SC[id].filter(x=>x.w).length, h: SC[id].reduce((a,x)=>a+x.ot,0)});
+  const me = S.role==="att" ? {...tot(S.me), m:M.name[L[lang]]} : null;
+  const cls = d => [wdOf(mi,d)===0||wdOf(mi,d)===6?"we":"", mi===0&&d===TODAY?"tcol":""].join(" ");
+  const days = [...Array(M.n).keys()];
+  if(S.otDay >= M.n) S.otDay = M.n-1;
+  return `<div class="page-head"><div><h1>${t("sched_title")}</h1><p class="muted small" style="margin-top:6px">${t("mon_hint")}${edit?" "+t("sched_hint"):""}</p></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="mon-sw"><button class="btn btn-ghost btn-sm" data-act="mon" data-v="0" ${mi===0?"disabled":""} aria-label="${t("prev_m")}">‹</button><b>${M.name[L[lang]]}</b><button class="btn btn-ghost btn-sm" data-act="mon" data-v="1" ${mi===1?"disabled":""} aria-label="${t("next_m")}">›</button></span>
+    ${edit?`<button class="btn btn-sm" data-act="fill52">${t("fill52")}</button>`:""}</div></div>
+  ${me?`<section class="today"><div class="grow"><b style="font-weight:500">${t("my_week",me)}</b></div></section>`:""}
+  <section class="panel"><div class="table-wrap"><table class="msched">
+    <thead><tr><th>${t("name")}</th>${days.map(d=>`<th class="${cls(d)}"><b>${d+1}</b>${WD[L[lang]][wdOf(mi,d)]}</th>`).join("")}<th>${t("days_worked")}</th><th>${t("ot_total")}</th></tr></thead>
+    <tbody>${STAFF.map(s=>{ const x = tot(s.id);
+      return `<tr class="${S.role==="att"&&s.id===S.me?"me":""}"><td><div style="display:flex;gap:8px;align-items:center"><span class="avatar sm">${initials(s)}</span>${esc(sName(s))}</div></td>
+        ${SC[s.id].map((c,d)=>{ const inner = c.ot?`<span class="ot">+${c.ot}</span>`:""; const k = `dc ${c.w?"w":"off"}`;
+          return `<td class="${cls(d)}">${edit?`<button class="${k}" data-act="shift" data-v="${s.id}" data-d="${d}" aria-label="${esc(sName(s))} ${d+1}">${inner}</button>`:`<span class="${k}">${inner}</span>`}</td>`; }).join("")}
+        <td class="sum">${x.d}</td><td class="sum" style="color:${x.h?"var(--warn)":"var(--muted)"}">${x.h}${t("h")}</td></tr>`;}).join("")}</tbody>
+    <tfoot><tr><td>${t("on_shift")}</td>${days.map(d=>`<td class="${cls(d)}">${STAFF.filter(s=>SC[s.id][d].w).length}</td>`).join("")}<td></td><td></td></tr></tfoot>
+  </table></div>
+  <div class="legend"><span class="dc w"></span>${t("lg_w")}<span class="dc off"></span>${t("lg_off")}<span class="dc w"><span class="ot">+2</span></span>${t("lg_ot")}</div>
+  ${edit?`<div class="ot-bar"><b style="font-weight:500">${t("ot_for")}</b>
+    <select class="input input-sm" id="ot-day" data-act="otday" aria-label="${t("ot_day")}">${days.map(d=>`<option value="${d}" ${S.otDay===d?"selected":""}>${dayLabel(mi,d)}</option>`).join("")}</select>
+    <select class="input input-sm" id="ot-who" data-act="otwho" aria-label="${t("ot_who")}"><optgroup label="${t("teams_g")}">${TEAMS.filter(x=>x.members.length).map(x=>`<option value="${x.id}" ${S.otWho===x.id?"selected":""}>${esc(teamName(x))}</option>`).join("")}</optgroup><optgroup label="${t("people_g")}">${STAFF.map(x=>`<option value="${x.id}" ${S.otWho===x.id?"selected":""}>${esc(sName(x))}</option>`).join("")}</optgroup></select>
+    <select class="input input-sm" id="ot-h" data-act="oth" aria-label="${t("h")}">${[1,2,3,4].map(h=>`<option value="${h}" ${S.otH===h?"selected":""}>+${h} ${t("h")}</option>`).join("")}</select>
+    <button class="btn btn-primary btn-sm" data-act="otadd">${t("ot_btn")}</button>
+    <button class="btn btn-ghost btn-sm" data-act="otreset">${t("reset_ot")}</button></div>`:""}
+  </section>`;
+};
+
+/* ---------- stock ---------- */
+views.stock = function(){
+  const cats = ["all","amen","fridge","chem","equip"];
+  const head = `<div class="page-head"><div><h1>${t("stock_title")}</h1><p class="muted small" style="margin-top:6px">${t("stock_note")}</p></div><span class="spacer"></span>
+    <div class="chips"><button class="chip" data-act="stockmode" data-v="loc" aria-pressed="${S.stockMode==="loc"}">${t("by_loc")}</button><button class="chip" data-act="stockmode" data-v="item" aria-pressed="${S.stockMode==="item"}">${t("by_item")}</button>${S.role!=="att"?`<button class="chip" data-act="stockmode" data-v="issue" aria-pressed="${S.stockMode==="issue"}">${t("by_issue")}</button>`:""}</div></div>`;
+  const accessBox = `<div class="access"><span class="ico">${I.lock}</span><div style="min-width:0"><b>${t("sa_title")}</b><p class="muted small">${t("acc_body")}</p>
+    <div class="acc-chips"><span class="tag ok">✓ ${t("role_hk")}</span><span class="tag ok">✓ ${t("role_sup")}</span><span class="tag danger">✕ ${t("role_att")} · ${t("acc_no")}</span></div></div></div>`;
+  const tookBtn = S.role==="sup" ? `<button class="btn btn-sm btn-primary" data-act="sheet" data-k="took">${t("b_took")}</button>` : "";
+  if(S.stockMode==="issue"){
+    const list = ISSUES.filter(x=>S.issTeam==="all"||x.tm===S.issTeam);
+    const tp = teamSpendPanel();
+    const top = Object.entries(list.reduce((a,x)=>{ a[x.it]=(a[x.it]||0)+issueCost(x); return a; },{})).sort((a,b)=>b[1]-a[1]).slice(0,6); const tmax = top.length?top[0][1]:1;
+    const pick = ITEMS.filter(it=>RATE[it.id]!=null);
+    return head + accessBox + `<div class="dash">
+      
+      <section class="panel c7"><div class="panel-head"><h2>${t("p_team_cost")}</h2><span class="spacer"></span></div><div class="pbody">${tp.html}</div></section>
+      <section class="panel c5"><div class="panel-head"><h2>${t("p_top")}</h2></div><div class="pbody">${top.map(([id,v])=>`<div class="hbar"><span class="nm">${itemById(id).n[L[lang]]}</span><span class="tr"><i style="width:${v/tmax*100}%"></i></span><span class="v">${won(v)}</span></div>`).join("")}</div></section>
+      <section class="panel c12"><div class="panel-head"><h2>${t("issue_title")}</h2><span class="spacer"></span>
+        <select class="input input-sm" data-act="isteam" aria-label="${t("who_team")}"><option value="all">${t("all_teams")}</option>${TEAMS.filter(x=>x.members.length).map(x=>`<option value="${x.id}" ${S.issTeam===x.id?"selected":""}>${esc(teamName(x))}</option>`).join("")}<option value="rc" ${S.issTeam==="rc"?"selected":""}>${t("rc_team")}</option></select>
+        <span class="muted small mono">${won(list.reduce((a,x)=>a+issueCost(x),0))}</span></div>
+        <div class="table-wrap"><table class="ilog"><thead><tr><th>${t("when")}</th><th>${t("who_team")}</th><th>${t("item")}</th><th style="text-align:right">${t("qty")}</th><th>${t("issued_by")}</th></tr></thead><tbody>${issueRows(list.slice(-10).reverse())}</tbody></table></div>
+        ${S.role==="sup"?`<div class="issue-form" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span class="muted small" style="flex:1;min-width:180px">${t("hk_issues")}</span>${tookBtn}</div>`:""}
+        ${can("issue")?`<form class="issue-form" data-form="issue">
+          <div><label for="is-team">${t("who_team")}</label><select class="input input-sm" id="is-team" style="width:100%">${TEAMS.filter(x=>x.members.length).map(x=>`<option value="${x.id}">${esc(teamName(x))}</option>`).join("")}</select></div>
+          <div><label for="is-item">${t("item")}</label><select class="input input-sm" id="is-item" style="width:100%">${pick.map(it=>`<option value="${it.id}">${it.n[L[lang]]}</option>`).join("")}</select></div>
+          <div><label for="is-q">${t("qty")}</label><input class="input input-sm mono" id="is-q" type="number" min="1" value="10" style="width:100%"></div>
+          <button class="btn btn-primary btn-sm" type="submit">${t("issue_btn")}</button></form>`:""}
+      </section></div>`;
+  }
+  if(S.stockMode==="item"){
+    const items = ITEMS.filter(it=>S.stockCat==="all"||it.cat===S.stockCat);
+    const locs = LOCS.filter(l=>items.some(it=>STOCK[l][it.id]!=null));
+    return head + accessBox + `<div class="chips">${cats.map(c=>`<button class="chip" data-act="stockcat" data-v="${c}" aria-pressed="${S.stockCat===c}">${c==="all"?t("all"):t("cat_"+c)}</button>`).join("")}</div>
+    <section class="panel"><div class="table-wrap"><table class="matrix">
+      <thead><tr><th>${t("item")}</th>${locs.map(l=>`<th>${l}F</th>`).join("")}<th>${t("total")}</th></tr></thead>
+      <tbody>${items.map(it=>`<tr><td>${it.n[L[lang]]}</td>${locs.map(l=>{ const q = STOCK[l][it.id];
+        return q==null ? '<td class="muted">·</td>' : `<td><button class="cell" style="--m:${LVC[lvl(q,it.par)]}" data-act="stockgo" data-v="${l}">${q}</button></td>`; }).join("")}
+        <td><b>${LOCS.reduce((a,l)=>a+(STOCK[l][it.id]||0),0)}</b> <span class="muted">${it.u[L[lang]]}</span></td></tr>`).join("")}</tbody>
+    </table></div><div class="panel-head" style="border-bottom:0;border-top:1px solid var(--line)"><div class="legend">${["ok","low","critical"].map(k=>`<span><i style="--m:${LVC[k]}"></i>${t(k)}</span>`).join("")}</div></div></section>`;
+  }
+  const loc = S.stockLoc;
+  const card = l => { const lc = lowCount(l), fp = fillPct(l);
+    return `<button class="loc ${STORES.includes(l)?"main-store":""}" data-act="stockloc" data-v="${l}" aria-pressed="${loc===l}">
+      <span style="display:flex;justify-content:space-between;align-items:baseline;gap:6px"><span class="name">${l}F</span>${lc?`<span class="tag ${lc>3?"danger":"warn"}">${t("low_items",{n:lc})}</span>`:`<span class="tag ok">${t("ok")}</span>`}</span>
+      <span class="muted small">${locKind(l)}</span>
+      <span class="meter"><i style="width:${fp}%;--m:${fp<50?"var(--danger)":fp<75?"var(--warn)":"var(--ok)"}"></i></span>
+    </button>`; };
+  return head + accessBox + `
+  <div class="locs">${LOCS.map(card).join("")}</div>
+  <section class="panel">
+    <div class="panel-head"><h2>${floorLabel(loc)} · ${locKind(loc)}</h2><span class="spacer"></span>${tookBtn}</div>
+    ${itemsAt(loc).map(it=>{ const q = STOCK[loc][it.id], par = it.par, l = lvl(q,par);
+      return `<div class="stock-row">
+        <div class="nm"><b>${it.n[L[lang]]}</b><span class="muted small">${t("cat_"+it.cat)}</span></div>
+        <div class="qty"><span class="mono"><b style="font-size:16px">${q}</b> / ${par} ${it.u[L[lang]]} · <span style="color:${LVC[l]}">${t(l)}</span></span><span class="meter"><i style="width:${Math.min(100,q/par*100)}%;--m:${LVC[l]}"></i></span></div>
+        <div class="stk-acts">${can("issue")?`<button class="btn btn-sm btn-primary" data-act="sheet" data-k="issue" data-v="${it.id}">${t("b_issue")}</button>`:""}${can("stock_edit")?`<button class="btn btn-sm" data-act="sheet" data-k="in" data-v="${it.id}">+ ${t("b_in")}</button>`:""}${S.role==="sup"?`<button class="btn btn-sm" data-act="sheet" data-k="took" data-v="${it.id}">${t("took")}</button>`:""}</div>
+      </div>`;}).join("")}
+  </section>`;
+};
+
+function stockSheet(){
+  const k = S.sheet.k, it = itemById(S.sheet.it), have = STOCK[it.at][it.id];
+  const title = t(k==="issue"?"sh_issue":k==="took"?"sh_took":"sh_in");
+  return `<div class="scrim" data-act="closestk"></div>
+  <aside class="sheet" role="dialog" aria-modal="true" aria-label="${title}">
+    <div class="sheet-head"><div style="flex:1"><p class="eyebrow">${t("role_"+(S.role==="admin"?"hk":S.role))} · ${esc(sName(meObj()))}</p><span class="big" style="font-size:26px">${title}</span></div><button class="icon-btn" data-act="closestk" aria-label="${t("close")}">${I.x}</button></div>
+    <form class="sheet-body" data-form="stk" id="stk-form">
+      ${k==="issue"?`<div class="field"><label>${t("who_team")}</label><div class="chips">${TEAMS.filter(x=>x.members.length).map(x=>`<button type="button" class="chip" data-act="sktm" data-v="${x.id}" aria-pressed="${S.sheet.tm===x.id}">${esc(teamName(x))}</button>`).join("")}</div></div>`:""}
+      <div class="field"><label for="sk-item">${t("item")}</label><select class="input" id="sk-item" data-act="skitem">${STORES.map(l=>`<optgroup label="${l}F">${itemsAt(l).map(x=>`<option value="${x.id}" ${x.id===it.id?"selected":""}>${x.n[L[lang]]}</option>`).join("")}</optgroup>`).join("")}</select>
+        <span class="muted small">${it.at}F · ${t("in_stock")}: <b class="mono" style="color:${LVC[lvl(have,it.par)]}">${have}</b> / ${it.par} ${it.u[L[lang]]}</span></div>
+      <div class="field"><label for="sk-q">${t("qty")} (${it.u[L[lang]]})</label>
+        <div class="stepper"><button type="button" data-act="skq" data-d="-1" aria-label="−1">−</button><input class="input mono" id="sk-q" type="number" min="1" value="${S.sheet.q}" style="width:90px;text-align:center"><button type="button" data-act="skq" data-d="1" aria-label="+1">+</button></div>
+        <div class="chips">${[1,5,10,20].map(n=>`<button type="button" class="chip" data-act="skqset" data-v="${n}">${n}</button>`).join("")}</div></div>
+    </form>
+    <div class="sheet-foot"><button class="btn btn-primary btn-block" type="submit" form="stk-form" ${k==="issue"&&!S.sheet.tm?"disabled":""}>${t("sk_save")}</button><button class="btn btn-ghost btn-block" data-act="closestk">${t("sk_cancel")}</button></div>
+  </aside>`;
+}
+
+/* ---------- lost & found ---------- */
+const tx = v => Array.isArray(v) ? v[L[lang]] : v;
+const byName = b => typeof b==="string" ? sName(staffById(b)) : sName(b);
+views.lost = function(){
+  return `<div class="page-head"><h1>${t("lf_title")}</h1><span class="tag warn">${LOST.filter(x=>x.st==="stored").length} ${t("st_stored")}</span></div>
+  <div class="grid-2">
+  <section class="panel">${LOST.map((x,ix)=>`<article class="lf">
+      <div class="lf-ph" ${x.photo?`style="background-image:url('${x.photo}')"`:""}>${x.photo?"":I.lost}</div>
+      <div class="lf-main"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="font-weight:500">${esc(tx(x.item))}</b><span class="tag ${x.st==="stored"?"warn":x.st==="returned"?"ok":""}">${t("st_"+x.st)}</span></div>
+        ${tx(x.desc)?`<span class="muted small">${esc(tx(x.desc))}</span>`:""}
+        <span class="lf-meta"><span class="mono">${x.d}</span> · <button class="linkish mono" data-act="room" data-v="${x.room}">${x.room}</button> · ${esc(WHERE[x.where][L[lang]])} · ${t("by")}: ${esc(byName(x.by))}</span></div>
+      ${x.st==="stored"&&S.role!=="att"?`<button class="btn btn-sm" data-act="lfret" data-v="${ix}">${t("lf_return")}</button>`:""}
+    </article>`).join("")}</section>
+  <section class="panel"><div class="panel-head"><h2>${t("lf_new")}</h2></div>
+    <form class="form" data-form="lost">
+      <div class="field"><label class="btn" for="lf-file" style="color:var(--fg);font-size:14px;border-style:dashed">${I.camera}${t("lf_photo")}</label><input class="vh" type="file" accept="image/*" id="lf-file"><img id="lf-preview" alt="" hidden></div>
+      <div class="field"><label for="lf-room">${t("room")}</label><input class="input mono" id="lf-room" inputmode="numeric" placeholder="1407" autocomplete="off"></div>
+      <div class="field"><label for="lf-item">${t("lf_item")}</label><input class="input" id="lf-item" placeholder="${t("lf_item_ph")}" autocomplete="off"></div>
+      <div class="field"><label for="lf-desc">${t("lf_desc")}</label><input class="input" id="lf-desc" autocomplete="off"></div>
+      <div class="field"><label for="lf-where">${t("lf_where")}</label><select class="input" id="lf-where">${WHERE.map((w,i)=>`<option value="${i}">${esc(w[L[lang]])}</option>`).join("")}</select></div>
+      <button class="btn btn-primary" type="submit">${t("lf_save")}</button>
+    </form></section></div>`;
+};
+
+/* ---------- chat ---------- */
+const roomTags = s => s.replace(/#(\d{3,4})/g,(m0,no)=> rooms.some(r=>r.no==no) ? `<button class="rtag mono" data-act="room" data-v="${no}">#${no}</button>` : m0);
+function msgHtml(m){
+  const mine = m.who===meObj(), multi = typeof m.text!=="string";
+  const txt = !multi ? m.text : (S.tr ? m.text[lang] : m.text[m.lang]);
+  const showOrig = multi && S.tr && m.lang!==lang;
+  return `<div class="msg ${mine?"mine":""}"><span class="avatar">${initials(m.who)}</span><div class="bw">
+    <div class="msg-meta"><b>${esc(sName(m.who))}</b> <time class="mono">${m.t}</time></div>
+    <div class="bubble">${roomTags(esc(txt))}</div>${showOrig?`<div class="orig">${t("original")} · ${esc(m.text[m.lang])}</div>`:""}</div></div>`;
+}
+views.chat = function(){
+  const cur = CHANS.find(c=>c[0]===S.chan);
+  return `<div class="page-head"><h1>${t("nav_chat")}</h1></div>
+  <div class="chat">
+    <aside class="chans">${CHANS.map(([k,l])=>`<button class="chan" data-act="chan" data-v="${k}" aria-pressed="${S.chan===k}"><span class="avatar">#</span><span>${t(l)}</span><span class="count">${MSGS[k].length}</span></button>`).join("")}</aside>
+    <section class="panel">
+      <div class="panel-head"><h2>${t(cur[1])}</h2><span class="spacer"></span><span style="display:flex;gap:8px;align-items:center"><button class="switch" role="switch" id="tr-switch" aria-checked="${S.tr}" data-act="tr" aria-label="${t("translate")}"></button><span class="small">${t("translate")}</span></span></div>
+      <div class="msgs">${MSGS[S.chan].map(msgHtml).join("")}</div>
+      <div class="quick">${["q1","q2","q3"].map(q=>`<button class="chip" data-act="quick" data-v="${q}">${esc(t(q))}</button>`).join("")}</div>
+      <form class="composer" data-form="chat"><input class="input" id="chat-input" autocomplete="off" placeholder="${t("chat_ph")}"><button class="btn btn-primary" type="submit">${t("send")}</button></form>
+    </section></div>`;
+};
+
+/* ---------- admin: accounts ---------- */
+views.admin = function(){
+  return `<div class="page-head"><h1>${t("acc_title")}</h1></div>
+  <div class="notice">${I.lock}<span>${t("acc_notice")}</span></div>
+  <div class="grid-2">
+    <section class="panel"><div class="table-wrap"><table>
+      <thead><tr><th>${t("name")}</th><th>${t("role")}</th><th>${t("last_login")}</th><th></th></tr></thead>
+      <tbody>${USERS.map((u,ix)=>`<tr>
+        <td><div style="display:flex;gap:10px;align-items:center"><span class="avatar">${initials(u.u)}</span><div style="display:flex;flex-direction:column;line-height:1.3"><span>${esc(sName(u.u))}</span><span class="mono muted" style="font-size:11px">${esc(u.login)}</span></div></div></td>
+        <td><select class="input input-sm" id="urole-${ix}" data-act="urole" data-v="${ix}" ${u.u===ADM?"disabled":""}>${["att","hk","sup","admin"].map(r=>`<option value="${r}" ${u.role===r?"selected":""}>${t("role_"+r)}</option>`).join("")}</select></td>
+        <td class="mono muted">${u.last}</td>
+        <td>${u.u===ADM?"":`<button class="btn btn-sm btn-danger ${S.delArm===u.login?"armed":""}" data-act="udel" data-v="${esc(u.login)}">${S.delArm===u.login?t("del_sure"):t("del")}</button>`}</td></tr>`).join("")}</tbody>
+    </table></div></section>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <section class="panel"><div class="panel-head"><h2>${t("add_member")}</h2></div>
+        <form class="form" data-form="member">
+          <div class="field"><label for="nm-name">${t("name")}</label><input class="input" id="nm-name" autocomplete="off" placeholder="${lang==="ko"?"이름":lang==="ru"?"Анна":"Anna"}"></div>
+          <div class="field"><label for="nm-role">${t("role")}</label><select class="input" id="nm-role">${["att","hk","sup","admin"].map(r=>`<option value="${r}">${t("role_"+r)}</option>`).join("")}</select></div>
+          <button class="btn btn-primary" type="submit">${t("create")}</button>
+          ${S.tempPw?`<div class="temp"><span class="eyebrow">${t("temp_pw")} · ${esc(S.tempPw.login)}</span><span class="mono">${S.tempPw.pw}</span><span class="muted small">${t("temp_hint")}</span></div>`:""}
+        </form></section>
+      <section class="panel"><div class="panel-head"><h2>${t("perms")}</h2></div><div class="table-wrap"><table class="perm">
+        <thead><tr><th></th>${["att","hk","sup","admin"].map(r=>`<th>${t("role_"+r)}</th>`).join("")}</tr></thead>
+        <tbody>${Object.keys(PERMS).map(p=>`<tr><td style="white-space:normal">${t("p_"+p)}</td>${["att","hk","sup","admin"].map(r=>`<td><input type="checkbox" id="perm-${p}-${r}" data-act="perm" data-v="${p}" data-r="${r}" ${PERMS[p][r]?"checked":""} ${r==="admin"?"disabled":""} aria-label="${t("p_"+p)} · ${t("role_"+r)}"></td>`).join("")}</tr>`).join("")}</tbody>
+      </table></div></section>
+    </div>
+  </div>`;
+};
+
+/* ================= actions ================= */
+let toastTimer;
+function toast(msg){ S.toast = msg; clearTimeout(toastTimer); toastTimer = setTimeout(()=>{ S.toast=""; const el=document.querySelector(".toast"); if(el) el.remove(); }, 2600); }
+const STLOG = {INS:"log_inspect",ARR:"log_inspect",VD:"log_dirty",OOO:"log_ooo"};
+function setStatus(r, st){
+  if(st==="INS" && r.arrAt) st = "ARR";
+  const prev = r.st; r.st = st;
+  r.log.push({t:NOW, k: prev==="OOO"&&st==="VD" ? "log_back" : STLOG[st], who: whoAmI()});
+  toast(t("t_status",{r:r.no, s:stLabel(r)}));
+}
+function go(v){ S.view = v; S.schedX = null; S.open = null; S.finish = null; S.assign = false; S.picked.clear(); try{ history.replaceState(null,"","#"+v); }catch(e){} render(); window.scrollTo(0,0); }
+function shrink(file){ return new Promise(res=>{
+  const fr = new FileReader();
+  fr.onload = () => { const im = new Image(); im.onload = () => { const k = Math.min(1, 900/Math.max(im.width,im.height)); const c = document.createElement("canvas"); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); try{ res(c.toDataURL("image/jpeg",.78)); }catch(e){ res(fr.result); } }; im.onerror = () => res(null); im.src = fr.result; };
+  fr.onerror = () => res(null); fr.readAsDataURL(file);
+}); }
+
+app.addEventListener("click", e=>{
+  const b = e.target.closest("[data-act]"); if(!b || b.disabled) return;
+  const a = b.dataset.act, v = b.dataset.v, room = b.dataset.room ? rooms.find(r=>r.no==b.dataset.room) : null;
+  if(["perm","rteam","mteam","urole","otday","oth","otwho","isteam","langsel","skitem"].includes(a)) return;
+  if(a!=="udel") S.delArm = null;
+  switch(a){
+    case "lang": lang = v; try{localStorage.setItem("ss-lang",v);}catch(_){} break;
+    case "login": S.role = v; S.view = v==="att" ? "home" : v==="hk" ? "stock" : "dash"; S.stockMode = "loc"; break;
+    case "logout": S.role = null; S.open = null; S.finish = null; S.assign = false; break;
+    case "go": go(v); return;
+    case "theme": { const cur = document.documentElement.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      const nx = cur==="dark" ? "light" : "dark"; document.documentElement.setAttribute("data-theme", nx); try{localStorage.setItem("ss-theme",nx);}catch(_){} if(!S.role) startArt(); return; }
+    case "homef": S.homeF = v; break;
+    case "filter": S.filter = S.filter===v && v!=="all" ? "all" : v; break;
+    case "room": S.open = +v; S.finish = null; break;
+    case "close": S.open = null; break;
+    case "setst": setStatus(room, v); break;
+    case "checkout": room.st = "VD"; room.log.push({t:NOW,k:"log_out",who:whoAmI()}); toast(t("t_co",{r:room.no})); break;
+    case "finish": S.finish = +v; S.open = null; S.finPhotos = []; S.finChecks = {}; break;
+    case "closefin": S.finish = null; break;
+    case "fincheck": S.finChecks[v] = !S.finChecks[v]; break;
+    case "rmphoto": S.finPhotos.splice(+v,1); break;
+    case "demophoto": S.finPhotos.push(samplePhoto(PH_KIND[S.finPhotos.length%3], S.finPhotos.length+7)); break;
+    case "findone": { const r = rooms.find(x=>x.no===+v); const tm = teamById(r.team) || myTeam();
+      r.st = (r.st==="OD" && !r.flags.dep) ? "OC" : "VC";
+      r.credit = tm ? tm.members.slice() : [S.me];
+      r.photos = S.finPhotos.map(src=>({src, who:meObj(), t:NOW}));
+      r.log.push({t:NOW,k:"log_finish",who: whoAmI() + (tm && tm.members.length>1 ? " ("+teamName(tm)+")" : "")});
+      S.finish = null; S.finPhotos = []; S.finChecks = {}; toast(t("t_fin",{r:r.no})); break; }
+    case "assignmode": S.assign = !S.assign; S.picked.clear(); break;
+    case "pick": { const no = +v; S.picked.has(no) ? S.picked.delete(no) : S.picked.add(no); break; }
+    case "doassign": { const tid = document.getElementById("assign-team").value, tm = teamById(tid);
+      S.picked.forEach(no=>{ const r = rooms.find(x=>x.no===no); r.team = tid; r.log.push({t:NOW,k:"log_assign",who:teamName(tm)}); });
+      toast(t("t_assigned",{n:S.picked.size, team:teamName(tm)})); S.picked.clear(); break; }
+    case "newteam": TEAMS.push({id:"t"+(TEAMS.length+1), members:[], floors:[]}); toast(t("t_newteam")); break;
+    case "shift": { const c = SCHEDS[S.mon][v][+b.dataset.d]; c.w = !c.w; if(!c.w) c.ot = 0; break; }
+    case "mon": S.mon = +v; S.schedX = null; break;
+    case "fill52": { STAFF.forEach((s,ix)=>{ SCHEDS[S.mon][s.id] = fill52(S.mon,ix+1); }); toast(t("t_fill",{m:MONTHS[S.mon].name[L[lang]]})); break; }
+    case "otadd": { const d = S.otDay, tm = teamById(S.otWho), ids = tm ? tm.members : [S.otWho];
+      ids.forEach(id=>{ const c = SCHEDS[S.mon][id][d]; c.w = true; c.ot += S.otH; });
+      toast(t("t_ot",{d:dayLabel(S.mon,d), who: tm ? teamName(tm) : sName(staffById(S.otWho)), h:S.otH})); break; }
+    case "otreset": STAFF.forEach(s=>SCHEDS[S.mon][s.id][S.otDay].ot = 0); break;
+    case "stockgo": S.view = "stock"; S.stockMode = "loc"; S.stockLoc = +v; try{ history.replaceState(null,"","#stock"); }catch(_){} window.scrollTo(0,0); break;
+    case "stockmode": S.stockMode = v; break;
+    case "issuego": S.stockMode = "issue"; go("stock"); return;
+    case "stockcat": S.stockCat = v; break;
+    case "stockloc": S.stockLoc = +v; break;
+    case "sheet": { const k = b.dataset.k, id = v || itemsAt(S.stockLoc)[0].id; S.sheet = {k, it:id, q:k==="in"?10:k==="took"?1:5, tm:null}; break; }
+    case "closestk": S.sheet = null; break;
+    case "sktm": S.sheet.tm = v; break;
+    case "skq": { const el = document.getElementById("sk-q"); S.sheet.q = Math.max(1, (+el.value||1) + (+b.dataset.d)); break; }
+    case "skqset": S.sheet.q = +v; break;
+    case "stock": { const q = STOCK[S.stockLoc], dd = +b.dataset.d; q[v] = Math.max(0, q[v] + dd);
+      if(dd<0 && RATE[v]!=null){ const tm = S.role==="att" ? myTeam() : null; if(tm){ ISSUES.push({d:TODAY, tm:tm.id, it:v, q:1, by:S.me, tm_:NOW, fresh:true}); } } break; }
+    case "refill": { const loc = +v; let n = 0; itemsAt(loc).forEach(it=>{ if(STOCK[loc][it.id] < it.par){ STOCK[loc][it.id] = it.par; n++; } });
+      toast(n ? t("t_refill",{loc:floorLabel(loc),n}) : t("t_nofill")); break; }
+    case "lfret": LOST[+v].st = "returned"; toast(t("t_ret")); break;
+    case "chan": S.chan = v; break;
+    case "tr": S.tr = !S.tr; break;
+    case "quick": MSGS[S.chan].push({who:meObj(), t:NOW, lang, text:t(v)}); break;
+    case "udel": { if(S.delArm!==v){ S.delArm = v; break; } const ix = USERS.findIndex(u=>u.login===v); const nm = sName(USERS[ix].u); USERS.splice(ix,1); S.delArm = null; toast(t("t_deleted",{n:nm})); break; }
+    default: return;
+  }
+  render();
+});
+app.addEventListener("change", async e=>{
+  const el = e.target, a = el.dataset.act;
+  if(a==="perm"){ PERMS[el.dataset.v][el.dataset.r] = el.checked ? 1 : 0; }
+  if(a==="urole"){ USERS[+el.dataset.v].role = el.value; }
+  if(a==="langsel"){ lang = el.value; try{localStorage.setItem("ss-lang",lang);}catch(_){} render(); }
+  if(a==="rteam"){ const r = rooms.find(x=>x.no===+el.dataset.v); r.team = el.value || null; if(r.team) r.log.push({t:NOW,k:"log_assign",who:teamName(teamById(r.team))}); render(); }
+  if(a==="mteam"){ const sid = el.dataset.v; TEAMS.forEach(x=>{ x.members = x.members.filter(id=>id!==sid); }); const tm = teamById(el.value); if(tm) tm.members.push(sid); toast(t("t_moved",{p:sName(staffById(sid)), team:teamName(tm)})); render(); }
+  if(a==="otday"){ S.otDay = +el.value; }
+  if(a==="oth"){ S.otH = +el.value; }
+  if(a==="otwho"){ S.otWho = el.value; }
+  if(a==="isteam"){ S.issTeam = el.value; render(); }
+  if(a==="skitem"){ S.sheet.it = el.value; const q = document.getElementById("sk-q"); if(q) S.sheet.q = Math.max(1,+q.value||1); render(); }
+  if(el.dataset.photo && el.files && el.files.length){ const out = await Promise.all([...el.files].slice(0,8).map(shrink)); S.finPhotos.push(...out.filter(Boolean)); render(); }
+  if(el.id==="lf-file" && el.files && el.files[0]){ const src = await shrink(el.files[0]); const im = document.getElementById("lf-preview"); if(im && src){ im.src = src; im.hidden = false; } }
+});
+app.addEventListener("input", e=>{
+  if(e.target.dataset.input==="q"){ S.q = e.target.value; const pos = e.target.selectionStart; render(); const s = document.getElementById("room-search"); if(s){ s.focus(); try{s.setSelectionRange(pos,pos);}catch(_){} } }
+});
+app.addEventListener("submit", e=>{
+  e.preventDefault();
+  const f = e.target.dataset.form;
+  if(f==="login"){ S.role = "att"; S.view = "home"; render(); return; }
+  if(f==="chat"){ const inp = document.getElementById("chat-input"); const v = inp.value.trim(); if(!v) return;
+    MSGS[S.chan].push({who:meObj(), t:NOW, lang, text:v}); render(); const ni = document.getElementById("chat-input"); if(ni) ni.focus(); return; }
+  if(f==="issue"){ const tm = teamById(document.getElementById("is-team").value), id = document.getElementById("is-item").value, q = Math.max(1, +document.getElementById("is-q").value||1), it = itemById(id);
+    ISSUES.push({d:TODAY, tm:tm.id, it:id, q, by:meObj().id, tm_:NOW, fresh:true});
+    if(q > STOCK[it.at][id]){ toast(t("t_short",{n:STOCK[it.at][id],u:it.u[L[lang]]})); render(); return; } STOCK[it.at][id] -= q; ISSUES[ISSUES.length-1].by = meObj().id;
+    toast(t("t_issued",{team:teamName(tm), item:it.n[L[lang]], q, u:it.u[L[lang]]})); render(); return; }
+  if(f==="stk"){ const sh = S.sheet, it = itemById(sh.it), q = Math.max(1, +document.getElementById("sk-q").value||1), have = STOCK[it.at][it.id], u = it.u[L[lang]], item = it.n[L[lang]];
+    if(sh.k!=="in" && q>have){ toast(t("t_short",{n:have,u})); render(); return; }
+    if(sh.k==="in"){ STOCK[it.at][it.id] = have + q; toast(t("t_in",{item,q,u})); }
+    else { STOCK[it.at][it.id] = have - q; ISSUES.push({d:TODAY, tm: sh.k==="took" ? "rc" : sh.tm, it:it.id, q, by:meObj().id, tm_:NOW, fresh:true});
+      toast(sh.k==="took" ? t("t_took",{item,q,u}) : t("t_issued",{team:teamName(teamById(sh.tm)), item, q, u})); }
+    S.sheet = null; S.stockLoc = it.at; render(); return; }
+  if(f==="lost"){
+    const no = +document.getElementById("lf-room").value.trim(), item = document.getElementById("lf-item").value.trim();
+    const room = rooms.find(r=>r.no===no);
+    if(!room || !item){ toast(t("lf_err")); render(); return; }
+    const im = document.getElementById("lf-preview");
+    LOST.unshift({d:"10/28 "+NOW, room:no, item, desc:document.getElementById("lf-desc").value.trim(), where:+document.getElementById("lf-where").value, by:meObj(), st:"stored", photo: im && !im.hidden ? im.src : null});
+    room.log.push({t:NOW,k:"log_lost",who:whoAmI()}); toast(t("t_lf")); render(); return;
+  }
+  if(f==="member"){
+    const name = document.getElementById("nm-name").value.trim();
+    if(!name){ toast(t("name_err")); render(); return; }
+    const role = document.getElementById("nm-role").value;
+    const ascii = name.normalize("NFKD").replace(/[^a-zA-Z]/g,"").toLowerCase();
+    const login = (role==="att"?"hk.":role==="sup"?"front.":"admin.") + (ascii || "user"+(USERS.length+1));
+    USERS.push({u:{id:"n"+USERS.length, n:[name,name,name]}, role, login, last:"—"});
+    const abc = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; let pw = ""; for(let i=0;i<8;i++){ pw += abc[Math.floor(Math.random()*abc.length)]; if(i===3) pw += "-"; }
+    S.tempPw = {login, pw}; toast(t("t_created",{n:name})); render();
+  }
+});
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && (S.open||S.finish)){ S.open=null; S.finish=null; render(); } });
+
+/* ================= login art: a corridor of doors lighting up ================= */
+let artRaf = null;
+function startArt(){
+  stopArt();
+  const c = document.getElementById("art"); if(!c) return;
+  const ctx = c.getContext("2d");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const cs = getComputedStyle(document.documentElement);
+  const cols = ["--s-vd","--s-vc","--s-ins","--accent"].map(v=>cs.getPropertyValue(v).trim());
+  const line = cs.getPropertyValue("--line").trim();
+  const r2 = rng(77); const cells = []; for(let i=0;i<300;i++) cells.push({c:Math.floor(r2()*cols.length), ph:r2()*6.28, sp:.25+r2()*.7});
+  const size = () => { const d = devicePixelRatio||1; c.width = c.clientWidth*d; c.height = c.clientHeight*d; ctx.setTransform(d,0,0,d,0,0); };
+  size();
+  function draw(tm){
+    const w=c.clientWidth, h=c.clientHeight; ctx.clearRect(0,0,w,h);
+    const dw=22, dh=40, gx=14, gy=22, nx=Math.ceil(w/(dw+gx))+1, ny=Math.ceil(h/(dh+gy))+1;
+    for(let y=0;y<ny;y++) for(let x=0;x<nx;x++){
+      const cell = cells[(y*nx+x)%cells.length], px = x*(dw+gx)+10, py = y*(dh+gy)+6;
+      const fade = Math.max(0, (px/w)*1.3-.25) * Math.max(0, (py/h)*1.25-.1);
+      const a = (reduce ? .5 : .3+.4*Math.sin(tm/1000*cell.sp+cell.ph)) * fade;
+      ctx.globalAlpha = .7*fade; ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.strokeRect(px+.5,py+.5,dw,dh);
+      ctx.globalAlpha = Math.max(0,a); ctx.fillStyle = cols[cell.c]; ctx.beginPath(); ctx.arc(px+dw-6, py+dh/2, 1.8, 0, 6.3); ctx.fill(); ctx.fillRect(px+4, py+dh+4, dw-8, 2);
+    }
+    ctx.globalAlpha = 1;
+    if(!reduce) artRaf = requestAnimationFrame(draw);
+  }
+  artRaf = requestAnimationFrame(draw);
+  window.onresize = () => { if(document.getElementById("art")) size(); };
+}
+function stopArt(){ if(artRaf) cancelAnimationFrame(artRaf); artRaf = null; }
+
+const h = location.hash.slice(1);
+if(NAV[h]){ S.role = h==="home" ? "att" : h==="admin" ? "admin" : "sup"; S.view = h; }
+render();
+})();
+
+</script>
+
+</body>
+</html>
